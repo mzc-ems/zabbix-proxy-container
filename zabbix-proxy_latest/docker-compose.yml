@@ -1,0 +1,70 @@
+version: '3.5'
+services:
+ zabbix-proxy-sqlite3:
+  image: zabbix/zabbix-proxy-sqlite3:alpine-5.0-latest
+  ports:
+   - "10061:10051"
+  volumes:
+   - /etc/localtime:/etc/localtime:ro
+   - /etc/timezone:/etc/timezone:ro 
+#   - ./zbx_env/usr/lib/zabbix/externalscripts:/usr/lib/zabbix/externalscripts:ro
+#   - ./zbx_env/var/lib/zabbix/modules:/var/lib/zabbix/modules:ro
+#   - ./zbx_env/var/lib/zabbix/enc:/var/lib/zabbix/enc:ro
+   - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
+#   - ./zbx_env/var/lib/zabbix/mibs:/var/lib/zabbix/mibs:ro
+#   - snmptraps:/var/lib/zabbix/snmptraps:rw
+#  links:
+#   - zabbix-server:zabbix-server
+#   - zabbix-java-gateway:zabbix-java-gateway
+  ulimits:
+   nproc: 65535
+   nofile:
+    soft: 20000
+    hard: 40000
+  deploy:
+   resources:
+    limits:
+      cpus: '0.70'
+      memory: 512M
+    reservations:
+      cpus: '0.3'
+      memory: 256M
+  env_file:
+   - .env_prx
+   - .env_prx_sqlite3
+#  depends_on:
+#   - zabbix-java-gateway
+#   - zabbix-snmptraps
+  networks:
+   zbx_net_backend:
+    aliases:
+     - zabbix-proxy-sqlite3
+     - zabbix-proxy-alpine-sqlite3
+     - zabbix-proxy-sqlite3-alpine
+   zbx_net_frontend:
+  stop_grace_period: 30s
+  labels:
+   com.zabbix.description: "Zabbix proxy with SQLite3 database support"
+   com.zabbix.company: "Zabbix LLC"
+   com.zabbix.component: "zabbix-proxy"
+   com.zabbix.dbtype: "sqlite3"
+   com.zabbix.os: "alpine"
+
+networks:
+  zbx_net_frontend:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.238.0/24
+  zbx_net_backend:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "false"
+    internal: true
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.239.0/24
