@@ -1,7 +1,11 @@
 version: '3.5'
 services:
  zabbix-proxy-sqlite3:
-  image: zabbix/zabbix-proxy-sqlite3:alpine-5.0-latest
+   build:
+   context: ./proxy-sqlite3/alpine
+   cache_from:
+    - alpine:3.12
+  image: zabbix-proxy-sqlite3:alpine-local
   ports:
    - "10061:10051"
   volumes:
