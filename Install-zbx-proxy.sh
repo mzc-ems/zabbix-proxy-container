@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-TYPE=${1:-basic}
+OPTND=1
+
+# Error message
+function err_msg() { echo "$@" ;} >&2
 
 # Print color message.
 function color_msg() { 
@@ -20,80 +23,97 @@ function color_msg() {
   tput sgr0
 } 
 
-# Install the zabbix proxy server.
-function install_zbx_proxy() {
-    $TYPE="$1"
-
-    if [[ $TYPE -eq "basic" ]]; then
-        docker-compose -f ./zabbix-proxy_latest/docker-compose.yml up -d
-    elif [[ $TYPE -eq "local" ]]; then
-        docker-compose -f ./zabbix-proxy_local/docker-compose.yml up -d --build 
-    else
-        echo "Please enter either $(color_msg yello basic) or $(color_msg yello local)."
-    fi
-}
-
 # Show help
 function show_help() {
     err_msg "How to install for zabbix proxy server."
     err_msg
     err_msg "Usage:" 
-    err_msg "  $(basename "$0") [TYPE] [options]"
-    err_msg "  $(basename "$0") -h|--help"
+    err_msg "  $(basename "$0") [options] [TYPE <basic|build>]"
     err_msg
     err_msg "Options:"
-    err_msg "  -n, --name NAME          Specify a zabbix proxy server name"
-    err_msg "  -H, --host HOST|IP       Specify the zabbix server hostname or ip address"
+    err_msg "  -n <name>          Specify a zabbix proxy server name"
+    err_msg "  -s <host|ip>       Specify the zabbix server hostname or ip address"
+    err_msg "  -t <basic|build>   Reference to Type section"
+    err_msg "  -h                 This help text"
     err_msg 
     err_msg "Type:"
-    err_msg "  basic                    Specify a default type to install container"
-    err_msg "  local                    Specify a custom build to install container"
-    err_msg "                           Include a dockerfile"
+    err_msg "  basic              Specify a default type to install container"
+    err_msg "  build              Specify a custom build to install container"
+    err_msg "                     Include a dockerfile"
     exit 1
 }
 
-# Error message
-function err_msg() { echo "$@" ;} >&2
+# Install the zabbix proxy server.
+function install_zbx_proxy() {
+    if [[ "$TYPE" == basic ]]; then
+        echo "docker-compose -f ./zabbix-proxy_latest/docker-compose.yml up -d"
+    elif [[ "$TYPE" == build ]]; then
+        echo "docker-compose -f ./zabbix-proxy_local/docker-compose.yml up -d --build"
+    else
+        echo "Please enter either $(color_msg yello basic) or $(color_msg yello build)."
+    fi
+}
 
-# Main process
+# Main
 # Short options
-color_msg green "Start installing zabbix proxy server .....\n"
-
-while getopts ":n:H:h" opt; do 
+while getopts ":n:s:t:h" opt; do 
     case $opt in
         n)
-            ZBX_PROXY_NAME=$OPTARG
-            if [[ "$ZBX_PROXY_NAME" =~ ^[0-9._%+0-]+$ ]]; then
-                err_msg "The first letter cann't digit or special character"
-            fi
-            ;;
-        H)
-            ZBX_SERVER=$OPTARG
-            if [[ "$ZBX_SERVER" =~ ^[0-9._%+0-]+$ || "$ZBX_SERVER" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
-                echo "OK"
+            ZBX_PROXY_NAME="$OPTARG"
+            if [[ $ZBX_PROXY_NAME =~ ^[A-Za-z].+$ ]]; then
+                echo "-n arguments OK"         
             else
-                err_msg $(color_msg red "ERR: Check hostname or IP address.")
+                err_msg "error: the first letter cann't digit or special character"
+                echo "$OPTARG"
+                exit 1
             fi
             ;;
-        h)
-            show_help
-            ;;
-        :)
-            case $OPTARG in
-                n) err_msg "ERR: arguments invaild -$OPTARG"
+        s)
+            ZBX_SERVER="$OPTARG"
+            if [[ $ZBX_SERVER =~ ^-n ]] && [[ $ZBX_SERVER =~ ^[A-Za-z].+$ ]] || [[ $ZBX_SERVER =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
+                echo "-s arguments OK"
+            else
+                err_msg $(color_msg red "error: check hostname or ip address.")
+                echo "$OPTARG"
                 exit 1
-                H) err_msg "ERR: arguments invaild -$OPTARG"
-                exit 1
-            esac
+            fi
             ;;
+        t)
+            if [[ -z $OPTARG ]] || [[ ! -n $OPTARG ]]; then
+                TYPE=basic
+                echo " TYPE is default"
+            else
+                TYPE="$OPTARG"
+            fi 
+            if [[ $TYPE =~ basic|build ]]; then
+                color_msg green "Start installing zabbix proxy server .....\n"
+                install_zbx_proxy
+                echo "-t arguments OK"
+            else
+                err_msg $(color_msg red "error: select basic or build.")
+                echo "$OPTARG"
+                exit 1
+            fi
+            ;;
+        h)  show_help ;;
         \?)
             err_msg "Invalid option: -$OPTARG"
             show_help
             exit 1
             ;;
+        :)
+            err_msg "Option -$OPTARG requires an argument."
+            err_msg "Run ./$(basename "$0") -h" 
+
+            exit 1
+            ;;
     esac
 done
 
+shift $(( OPTND - 1 ))
+echo "-n ARG is $ZBX_PROXY_NAME"
+echo "-s ARG is $ZBX_SERVER"
+echo "-t ARG is $TYPE"
 color_msg green "Completed installing zabbix proxy server .....\n"
 
 exit 0
