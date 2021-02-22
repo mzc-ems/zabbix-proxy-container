@@ -88,13 +88,13 @@ function install_docker_pack() {
         err_msg $(color_msg red "error: check your linux distro system.")
         exit 1
     fi
-}
 
 # Pre-install Docker Compose.
 color_msg green "Install docker-compose."
 sudo curl -L "https://github.com/docker/compose/releases/download/1.28.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+}
 
 # Short options
 while getopts ":t:n:s:h" opt; do 
