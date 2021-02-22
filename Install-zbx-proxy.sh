@@ -87,6 +87,7 @@ function install_docker_pack() {
 
 # Install the zabbix proxy server.
 function install_zbx_proxy() {
+    color_msg green "Start installing zabbix proxy server .....\n"
     if [[ "$TYPE" == lastest ]]; then
         echo "docker-compose -f ./zabbix-proxy_latest/docker-compose.yml up -d"
     elif [[ "$TYPE" == 'local' ]]; then
@@ -104,18 +105,13 @@ fi
 
 # Option parameters
 while getopts ":t:n:s:h" opt; do
-    if [[ -z "$OPTARG" ]] || [[ ! -n "$OPTARG" ]]; then
-        TYPE=lastest
-        echo " TYPE is default"
-    else
-        TYPE="$OPTARG"
-    fi 
-    
     case "${opt}" in
         t)
-            if [[ "$TYPE" =~ lastest|local ]]; then
+            TYPE="$OPTARG"
+            if [[ -z "$TYPE" ]] || [[ ! -n "$TYPE" ]]; then
+                TYPE=lastest 
+            elif [[ "$TYPE" =~ lastest|local ]]; then
                 install_docker_pack
-                color_msg green "Start installing zabbix proxy server .....\n"
                 install_zbx_proxy
                 echo "-t arguments OK"
             else
