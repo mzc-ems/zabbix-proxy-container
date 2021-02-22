@@ -2,7 +2,7 @@
 # Create Date: 2021-02-17 (parkmh@mz.co.kr / ManHee Park)
 # Description: The zabbix proxy server auto installer.
 
-OPTND=1
+OPTIND=1
 TYPE_BASE='./zabbix-proxy'
 
 # Error message
@@ -46,17 +46,6 @@ function show_help() {
     exit 1
 }
 
-# Install the zabbix proxy server.
-function install_zbx_proxy() {
-    if [[ "$TYPE" == lastest ]]; then
-        echo "docker-compose -f ./zabbix-proxy_latest/docker-compose.yml up -d"
-    elif [[ "$TYPE" == 'local' ]]; then
-        echo "docker-compose -f ./zabbix-proxy_local/docker-compose.yml up -d --build"
-    else
-        echo "Please enter either $(color_msg yello basic) or $(color_msg yello build)."
-    fi
-}
-
 # Pre-install Docker Engine.
 function install_docker_pack() {
     if [[ -n /etc/system-release ]]; then
@@ -89,16 +78,28 @@ function install_docker_pack() {
         exit 1
     fi
 
-# Pre-install Docker Compose.
-color_msg green "Install docker-compose."
-sudo curl -L "https://github.com/docker/compose/releases/download/1.28.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+    # Pre-install Docker Compose.
+    color_msg green "Install docker-compose."
+    sudo curl -L "https://github.com/docker/compose/releases/download/1.28.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 }
 
+# Install the zabbix proxy server.
+function install_zbx_proxy() {
+    if [[ "$TYPE" == lastest ]]; then
+        echo "docker-compose -f ./zabbix-proxy_latest/docker-compose.yml up -d"
+    elif [[ "$TYPE" == 'local' ]]; then
+        echo "docker-compose -f ./zabbix-proxy_local/docker-compose.yml up -d --build"
+    else
+        echo "Please enter either $(color_msg yello basic) or $(color_msg yello build)."
+    fi
+}
+
+# Main
 # Short options
 while getopts ":t:n:s:h" opt; do 
-    case $opt in
+    case "${opt}" in
         t)
             if [[ -z "$OPTARG" ]] || [[ ! -n "$OPTARG" ]]; then
                 TYPE=lastest
@@ -157,18 +158,19 @@ while getopts ":t:n:s:h" opt; do
         \?)
             err_msg "Invalid option: -$OPTARG"
             show_help
-            exit 1
             ;;
         :)
             err_msg "Option -$OPTARG requires an argument."
             err_msg "Run ./$(basename "$0") -h" 
-
             exit 1
+            ;;
+        *)
+            show_help
             ;;
     esac
 done
 
-shift $(( OPTND - 1 ))
+shift $(( OPTIND - 1 ))
 
 echo "-n ARG is $ZBX_PROXY_NAME"
 echo "-s ARG is $ZBX_SERVER"
