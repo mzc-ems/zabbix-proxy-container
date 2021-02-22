@@ -58,11 +58,42 @@ function install_zbx_proxy() {
 }
 
 # Main
+# Pre-install Docker Engine.
 if [[ -n /etc/system-release ]]; then
-
+    color_msg green "Install the Docker package from the repository. (CentOS)"
+    color_msg yellow "Add Docker's official repository >>> "
+    sudo yum-config-manager \
+        --add-repo \
+        https://download.docker.com/linux/centos/docker-ce.repo
+    color_msg yellow "Install the Docker Engine >>> "
+    sudo yum install docker-ce docker-ce-cli containerd.io
 elif [[ -n /etc/lsb-release ]]; then
-
+    color_msg green "Install the Docker package from the repository. (Ubuntu)"
+    sudo apt-get update && sudo apt-get install \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        gnupg-agent \
+        software-properties-common
+    color_msg yellow "Add Docker's official GPG Key >>> "
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    color_msg yellow "Add Docker's official repository >>> "
+    sudo add-apt-repository \
+        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+        $(lsb_release -cs) \
+        stable"
+    color_msg yellow "Install Docker Engine >>> "
+    sudo apt-get update && sudo apt-get install docker-ce docker-ce-cli containerd.io
+else
+    err_msg $(color_msg red "error: check your linux distro system.")
+    exit 1
 fi
+
+# Pre-install Docker Compose.
+color_msg green "Install docker-compose."
+sudo curl -L "https://github.com/docker/compose/releases/download/1.28.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
 
 # Short options
 while getopts ":t:n:s:h" opt; do 
