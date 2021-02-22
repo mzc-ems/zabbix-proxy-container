@@ -98,6 +98,11 @@ function install_zbx_proxy() {
 
 # Main
 # Short options
+if [[ -z $@ ]]; then
+    show_help
+fi
+
+# Option parameters
 while getopts ":t:n:s:h" opt; do 
     case "${opt}" in
         t)
@@ -154,7 +159,8 @@ while getopts ":t:n:s:h" opt; do
                 exit 1
             fi
             ;;
-        h)  show_help ;;
+        h)  show_help 
+            ;;
         \?)
             err_msg "Invalid option: -$OPTARG"
             show_help
