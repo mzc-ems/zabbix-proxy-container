@@ -3,7 +3,8 @@
 # Description: The zabbix proxy server auto installer.
 
 OPTIND=1
-TYPE_BASE='./zabbix-proxy'
+TEMPCNT=1
+TYPE_BASE=./zabbix-proxy
 
 # Error message
 function err_msg() { echo "$@" ;} >&2
@@ -19,7 +20,8 @@ function color_msg() {
     green  ) tput setaf 2 ; tput bold ;;
     yellow ) tput setaf 3 ; tput bold ;;
     blue   ) tput setaf 4 ; tput bold ;;
-    grey   ) tput setaf 5 ;;
+    grey   ) tput setaf 5 ; tput hold ;;
+    white  ) tput setaf 7 ;;
   esac
 
   echo -en "${text}"
@@ -74,7 +76,7 @@ function install_docker_pack() {
         color_msg yellow "Install Docker Engine >>> "
         sudo apt-get update && sudo apt-get install docker-ce docker-ce-cli containerd.io
     else
-        err_msg $(color_msg red "error: check your linux distro system.")
+        err_msg $(color_msg red "Error: check your linux distro system.")
         exit 1
     fi
 
@@ -99,81 +101,97 @@ function install_zbx_proxy() {
 
 # Main
 # Short options
-if [[ -z $@ ]]; then
+if [[ -z "$@" ]]; then
+    err_msg "Error: no options."
+    err_msg "run ./$(basename "$0") -h" 
+    exit 1
+#elif [[ "$1" != -t ]]; then
+#    err_msg "Error: $1 is invalid. The first option must be -t." 
+#    err_msg "run ./$(basename "$0") -h"
+#    exit 1
+elif [[ "$1" =~ help ]]; then
     show_help
 fi
 
 # Option parameters
 while getopts ":t:n:s:h" opt; do
-    case "${opt}" in
+    if [[ "$TEMPCNT" -eq 1 ]] && [[ "$opt" =~ [ns] ]]; then
+        err_msg "Error: $OPTARG is invalid. The first option must be -t." 
+        err_msg "run ./$(basename "$0") -h"
+        exit 1    
+    fi
+    case ${opt} in
         t)
             TYPE="$OPTARG"
-            if [[ -z "$TYPE" ]] || [[ ! -n "$TYPE" ]]; then
-                TYPE=lastest 
-            elif [[ "$TYPE" =~ lastest|local ]]; then
-                install_docker_pack
-                install_zbx_proxy
+            if [[ "$TYPE" =~ lastest|local ]]; then
+            #    install_docker_pack
+            #    install_zbx_proxy
                 echo "-t arguments OK"
             else
-                err_msg $(color_msg red "error: select lastest or local.")
-                echo "$OPTARG"
+                err_msg $(color_msg red "Error: -$opt is invaild argument or select lastest or local.")
                 exit 1
             fi
             ;;
         n)
             ZBX_PROXY_NAME="$OPTARG"
-            if [[ "$ZBX_PROXY_NAME" =~ ^-t ]] || [[ "$ZBX_PROXY_NAME" =~ ^[A-Za-z].+$ ]]; then
+            if [[ "$ZBX_PROXY_NAME" =~ ^-[sh] ]]; then 
+                err_msg "Error: -$opt is no argument"
+                show_help
+            elif [[ "$ZBX_PROXY_NAME" =~ [A-Za-z].+$ ]]; then
                 echo "-n arguments OK"
-                 CNT=`grep -c 'ZBX_HOSTNAME' ${TYPE_BASE}_${TYPE}/.env_prx`
-                
+                CNT=`grep -c '^ZBX_HOSTNAME' ${TYPE_BASE}_${TYPE}/.env_prx`
                 if [[ "$CNT" -ne 0 ]]; then
-                    err_msg $(color_msg yello "error: check ZBX_HOSTNAME in the .env_prx files.")
+                    err_msg $(color_msg yello "Error: check ZBX_HOSTNAME in the .env_prx files.")
                     exit 1
                 else
                     echo "ZBX_HOSTNAME=$ZBX_PROXY_NAME" >> ${TYPE_BASE}_${TYPE}/.env_prx
                 fi        
             else
-                err_msg "error: the first letter cann't digit or special character"
+                err_msg "Error: -$opt is invaild argument or the first letter cann't digit or special character"
                 echo "$OPTARG"
                 exit 1
             fi
             ;;
         s)
             ZBX_SERVER="$OPTARG"
-            if [[ "$ZBX_SERVER" =~ ^-n ]] || [[ "$ZBX_SERVER" =~ ^[A-Za-z].+$ ]] || [[ "$ZBX_SERVER" =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
+            if [[ "$ZBX_SERVER" =~ ^-[th] ]]; then 
+                err_msg "Error: -$opt is no argument"
+                show_help
+            elif [[ "$ZBX_SERVER" =~ [A-Za-z].+$ ]] || [[ "$ZBX_SERVER" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
                 echo "-s arguments OK"
-                CNT=`grep -c 'ZBX_SERVER_HOST' ${TYPE_BASE}_${TYPE}/.env_prx`
-                
+                CNT=`grep -c '^ZBX_SERVER_HOST' ${TYPE_BASE}_${TYPE}/.env_prx`               
                 if [[ "$CNT" -ne 0 ]]; then
-                    err_msg $(color_msg yello "error: check ZBX_SERVER in the .env_prx files.")
+                    err_msg $(color_msg yello "Error: check ZBX_SERVER in the .env_prx files.")
                     exit 1
                 else
                     echo "ZBX_SERVER_HOST=${ZBX_SERVER}" >> ${TYPE_BASE}_${TYPE}/.env_prx
                 fi
             else
-                err_msg $(color_msg red "error: check hostname or ip address.")
+                err_msg $(color_msg red "Error: -$opt is invaild argument or check hostname or ip address.")
                 echo "$OPTARG"
                 exit 1
             fi
             ;;
-        h)  show_help 
+        h)
+            show_help
             ;;
         \?)
             err_msg "Invalid option: -$OPTARG"
             show_help
             ;;
         :)
-            err_msg "Option -$OPTARG requires an argument."
+            err_msg "Error: option -$OPTARG requires an argument."
             err_msg "Run ./$(basename "$0") -h" 
             exit 1
             ;;
-        *)
-            show_help
-            ;;
     esac
+    TEMPCNT=$[ $TEMPCNT + 1 ]
 done
 
 shift $(( OPTIND - 1 ))
+if [[ -z "$TYPE" ]] || [[ -z "ZBX_PROXY_NAME" ]] || [[ -z "$ZBX_SERVER" ]]; then
+    show_help
+fi
 
 # Argument debug
 echo "-n ARG is $ZBX_PROXY_NAME"
