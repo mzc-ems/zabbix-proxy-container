@@ -101,6 +101,8 @@ function install_zbx_proxy() {
 }
 
 # Main
+install_docker_pack
+
 # Short options
 if [[ -z "$@" ]] ; then
     err_msg "Error: no options."
@@ -119,7 +121,6 @@ while getopts ":t:n:s:h" opt; do
         t)
             TYPE="$OPTARG"
             if [[ "$TYPE" =~ lastest|local ]]; then
-            #    install_docker_pack
             #    install_zbx_proxy
                 echo "-t arguments OK"
             else
