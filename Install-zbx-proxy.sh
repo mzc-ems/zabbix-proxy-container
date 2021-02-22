@@ -30,21 +30,22 @@ function color_msg() {
 
 # Show help
 function show_help() {
-    err_msg "How to install for zabbix proxy server."
-    err_msg
-    err_msg "Usage:" 
-    err_msg "  $(basename "$0") [-tns]"
-    err_msg
-    err_msg "Options:"
-    err_msg "  -t <lastest|local>   Reference to Type section"
-    err_msg "  -n <name>            Specify a zabbix proxy server name"
-    err_msg "  -s <host|ip>         Specify the zabbix server hostname or ip address"
-    err_msg "  -h                   This help text"
-    err_msg 
-    err_msg "Type:"
-    err_msg "  lastest              Specify a default type to install container"
-    err_msg "  local                Specify a custom build to install container"
-    err_msg "                       Include a dockerfile"
+    echo "How to install for zabbix proxy server."
+    echo
+    echo "Usage:" 
+    echo "  $(basename "$0") [-tns]"
+    echo
+    echo "Options:"
+    echo "  -t <lastest|local>   Reference to Type section"
+    echo "  -n <name>            Specify a zabbix proxy server name"
+    echo "  -s <host|ip>         Specify the zabbix server hostname or ip address"
+    echo "  -h                   This help text"
+    echo 
+    echo "Type:"
+    echo "  lastest              Specify a default type to install container"
+    echo "  local                Specify a custom build to install container"
+    echo "                       Include a dockerfile"
+    echo
     exit 1
 }
 
@@ -101,16 +102,10 @@ function install_zbx_proxy() {
 
 # Main
 # Short options
-if [[ -z "$@" ]]; then
+if [[ -z "$@" ]] ; then
     err_msg "Error: no options."
     err_msg "run ./$(basename "$0") -h" 
     exit 1
-#elif [[ "$1" != -t ]]; then
-#    err_msg "Error: $1 is invalid. The first option must be -t." 
-#    err_msg "run ./$(basename "$0") -h"
-#    exit 1
-elif [[ "$1" =~ help ]]; then
-    show_help
 fi
 
 # Option parameters
