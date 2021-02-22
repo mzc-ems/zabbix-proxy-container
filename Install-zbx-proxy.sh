@@ -103,15 +103,16 @@ if [[ -z $@ ]]; then
 fi
 
 # Option parameters
-while getopts ":t:n:s:h" opt; do 
+while getopts ":t:n:s:h" opt; do
+    if [[ -z "$OPTARG" ]] || [[ ! -n "$OPTARG" ]]; then
+        TYPE=lastest
+        echo " TYPE is default"
+    else
+        TYPE="$OPTARG"
+    fi 
+    
     case "${opt}" in
         t)
-            if [[ -z "$OPTARG" ]] || [[ ! -n "$OPTARG" ]]; then
-                TYPE=lastest
-                echo " TYPE is default"
-            else
-                TYPE="$OPTARG"
-            fi 
             if [[ "$TYPE" =~ lastest|local ]]; then
                 install_docker_pack
                 color_msg green "Start installing zabbix proxy server .....\n"
@@ -178,6 +179,7 @@ done
 
 shift $(( OPTIND - 1 ))
 
+# Argument debug
 echo "-n ARG is $ZBX_PROXY_NAME"
 echo "-s ARG is $ZBX_SERVER"
 echo "-t ARG is $TYPE"
