@@ -57,37 +57,38 @@ function install_zbx_proxy() {
     fi
 }
 
-# Main
 # Pre-install Docker Engine.
-if [[ -n /etc/system-release ]]; then
-    color_msg green "Install the Docker package from the repository. (CentOS)"
-    color_msg yellow "Add Docker's official repository >>> "
-    sudo yum-config-manager \
-        --add-repo \
-        https://download.docker.com/linux/centos/docker-ce.repo
-    color_msg yellow "Install the Docker Engine >>> "
-    sudo yum install docker-ce docker-ce-cli containerd.io
-elif [[ -n /etc/lsb-release ]]; then
-    color_msg green "Install the Docker package from the repository. (Ubuntu)"
-    sudo apt-get update && sudo apt-get install \
-        apt-transport-https \
-        ca-certificates \
-        curl \
-        gnupg-agent \
-        software-properties-common
-    color_msg yellow "Add Docker's official GPG Key >>> "
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-    color_msg yellow "Add Docker's official repository >>> "
-    sudo add-apt-repository \
-        "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-        $(lsb_release -cs) \
-        stable"
-    color_msg yellow "Install Docker Engine >>> "
-    sudo apt-get update && sudo apt-get install docker-ce docker-ce-cli containerd.io
-else
-    err_msg $(color_msg red "error: check your linux distro system.")
-    exit 1
-fi
+function install_docker_pack() {
+    if [[ -n /etc/system-release ]]; then
+        color_msg green "Install the Docker package from the repository. (CentOS)"
+        color_msg yellow "Add Docker's official repository >>> "
+        sudo yum-config-manager \
+            --add-repo \
+            https://download.docker.com/linux/centos/docker-ce.repo
+        color_msg yellow "Install the Docker Engine >>> "
+        sudo yum install docker-ce docker-ce-cli containerd.io
+    elif [[ -n /etc/lsb-release ]]; then
+        color_msg green "Install the Docker package from the repository. (Ubuntu)"
+        sudo apt-get update && sudo apt-get install \
+            apt-transport-https \
+            ca-certificates \
+            curl \
+            gnupg-agent \
+            software-properties-common
+        color_msg yellow "Add Docker's official GPG Key >>> "
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+        color_msg yellow "Add Docker's official repository >>> "
+        sudo add-apt-repository \
+            "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+            $(lsb_release -cs) \
+            stable"
+        color_msg yellow "Install Docker Engine >>> "
+        sudo apt-get update && sudo apt-get install docker-ce docker-ce-cli containerd.io
+    else
+        err_msg $(color_msg red "error: check your linux distro system.")
+        exit 1
+    fi
+}
 
 # Pre-install Docker Compose.
 color_msg green "Install docker-compose."
@@ -106,6 +107,7 @@ while getopts ":t:n:s:h" opt; do
                 TYPE="$OPTARG"
             fi 
             if [[ "$TYPE" =~ lastest|local ]]; then
+                install_docker_pack
                 color_msg green "Start installing zabbix proxy server .....\n"
                 install_zbx_proxy
                 echo "-t arguments OK"
@@ -171,8 +173,6 @@ shift $(( OPTND - 1 ))
 echo "-n ARG is $ZBX_PROXY_NAME"
 echo "-s ARG is $ZBX_SERVER"
 echo "-t ARG is $TYPE"
-
-
 
 color_msg green "Completed installing zabbix proxy server .....\n"
 
