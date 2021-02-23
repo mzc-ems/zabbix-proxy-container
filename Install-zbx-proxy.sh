@@ -18,16 +18,14 @@ color_msg() {
   local text="$@"
 
   case "$color" in
-    red    ) tput setaf 1 ; tput bold ;;
-    green  ) tput setaf 2 ; tput bold ;;
-    yellow ) tput setaf 3 ; tput bold ;;
-    blue   ) tput setaf 4 ; tput bold ;;
-    grey   ) tput setaf 5 ; tput hold ;;
-    white  ) tput setaf 7 ;;
+    red    ) echo -e "\e[31m" ;;
+    green  ) echo -e "\e[32m" ;;
+    yellow ) echo -e "\e[33m" ;;
+    blue   ) echo -e "\e[34m" ;;
   esac
 
   echo -en "$text"
-  tput sgr0
+  echo -e "\e[0m"
 } 
 
 # Show help
@@ -99,7 +97,7 @@ install_docker_pack() {
 
     # Pre-install Docker Compose.
     color_msg green "Install docker-compose."
-    if [ ! -f /usr/local/bin/docker-compose ]; then        
+    if [ ! $(command -v docker-compose) ]; then        
         sudo curl -L "https://github.com/docker/compose/releases/download/1.28.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
         sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
@@ -120,7 +118,7 @@ install_zbx_proxy() {
 
 # Main
 # Short options
-if [ -z $@ ] ; then
+if [[ -z "$@" ]] ; then
     err_msg "Error: no options."
     err_msg "run ./$(basename "$0") -h" 
     exit 1
@@ -202,13 +200,13 @@ while getopts ":t:n:s:h" opt; do
             ;;
 
     esac
-    TEMPCNT=$[ $TEMPCNT + 1 ]
+    TEMPCNT=$(( $TEMPCNT + 1 ))
 done
 
-shift $[ OPTIND - 1 ]
+shift $(( OPTIND - 1 ))
 
 if [ -z "$TYPE" ] || [ -z "ZBX_PROXY_NAME" ] || [ -z "$ZBX_SERVER" ]; then
-    show_help
+    show_help   
 fi
 
 color_msg green "Completed installing zabbix proxy server .....\n"
