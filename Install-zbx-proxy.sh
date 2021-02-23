@@ -166,11 +166,13 @@ while getopts ":t:n:s:h" opt; do
     fi
 
     case "$opt" in
+        # It is the central part of the processing.
         t)
             TYPE="$OPTARG"
             if [[ "$TYPE" =~ latest|local ]]; then
                 install_docker_pack
                 install_zbx_proxy
+                add_zbx_proxy_service
             else
                 err_msg "Error: -$opt is invaild argument or select latest or local."
                 exit 1
