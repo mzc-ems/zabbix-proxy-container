@@ -42,8 +42,8 @@ show_help() {
     echo 
     echo "Type:"
     echo "  latest              Specify a default type to install container"
-    echo "  local                Specify a custom build to install container"
-    echo "                       Include a dockerfile"
+    echo "  local               Specify a custom build to install container"
+    echo "                      Include a dockerfile"
     exit 1
 }
 
@@ -147,20 +147,25 @@ TimeoutStartSec=0
 WantedBy=multi-user.target
 EOF
         echo
+        echo
         color_msg yellow "Your user rights as a root.\n"
         color_msg yellow "Adding to the systemd service with something like:\n"
         color_msg yellow "Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file\n"
         color_msg yellow "The path is $PWD/zabbix-proxy-$TYPE\n\n"
         color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/\n"
-        color_msg yellow "      systemctl enable dc-zabbix-proxy.service\n\n"
+        color_msg yellow "      systemctl enable dc-zabbix-proxy.service\n"
+        echo
         color_msg green "Done.\n"
+        echo
     else
+        echo
         echo
         color_msg yellow "Your user rights as a root\n"
         color_msg yellow "Adding to service in rc.local with something like:\n\n"
         color_msg yellow "      echo \"docker-compose -f $PWD/zabbix-proxy-$TYPE/docker-compose.yml up -d\" >> /etc/rc.local\n" 
         echo
         color_msg green "Done.\n"
+        echo
     fi
 } 
 
@@ -189,7 +194,7 @@ while getopts ":t:n:s:h" opt; do
                 install_zbx_proxy
                 add_zbx_proxy_service
             else
-                err_msg "Error: -$opt is invaild argument or select latest or local."
+                err_msg "Error: -$opt is invaild argument or select <latest> or <local>."
                 exit 1
             fi
             ;;
