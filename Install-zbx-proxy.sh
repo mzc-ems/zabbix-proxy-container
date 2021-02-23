@@ -159,16 +159,12 @@ EOF
         color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/\n"
         color_msg yellow "      systemctl enable dc-zabbix-proxy.service\n"
         echo
-        color_msg green "Done.\n"
-        echo
     else
         echo
         echo
         color_msg yellow "Your user rights as a root\n"
         color_msg yellow "Adding to service in rc.local with something like:\n\n"
         color_msg yellow "      echo \"docker-compose -f $PWD/zabbix-proxy-$TYPE/docker-compose.yml up -d\" >> /etc/rc.local\n" 
-        echo
-        color_msg green "Done.\n"
         echo
     fi
 } 
@@ -276,12 +272,13 @@ if [ -z "$TYPE" ] || [ -z "ZBX_PROXY_NAME" ] || [ -z "$ZBX_SERVER" ]; then
     show_help   
 fi
 
-EGRESS_IP=$(curl ifconfig.io)
 color_msg green "Completed installing zabbix proxy server .....\n"
 echo 
-echo -n "This host's egress ip address is "
-color_msg blue "$(curl ifconfig.io)\n"
+echo -n "This host's egress ip address and port: "
+color_msg blue "$(curl -sL ifconfig.io) 10051\n"
+echo -n "This proxy server default mode: "
+color_msg blue "Active mode\n"
 echo 
-color_msg green "Done.\n"
+color_msg green "Done :)\n"
 
 exit 0
