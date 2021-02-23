@@ -144,17 +144,17 @@ TimeoutStartSec=0
 WantedBy=multi-user.target
 EOF
 
-        color_msg yellow "Your user rights as a root."
+        color_msg yellow "Your user rights as a root.\n"
         color_msg yellow "Adding to the systemd service with something like:\n"
-        color_msg yellow "Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file"
-        color_msg yellow "The path is $PWD/zabbix-proxy-$TYPE\n"
-        color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/"
-        color_msg yellow "      systemctl enable dc-zabbix-proxy.service"
+        color_msg yellow "Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file\n"
+        color_msg yellow "The path is $PWD/zabbix-proxy-$TYPE\n\n"
+        color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/\n"
+        color_msg yellow "      systemctl enable dc-zabbix-proxy.service\n\n"
         color_msg green "Done.\n"
     else
-        color_msg yellow "Your user rights as a root"
-        color_msg yellow "Adding to service in rc.local with something like:"
-        color_msg yellow "      echo \"docker-compose -f $PWD/zabbix-proxy-$TYPE/docker-compose.yml up -d\" >> /etc/rc.local" 
+        color_msg yellow "Your user rights as a root\n"
+        color_msg yellow "Adding to service in rc.local with something like:\n\n"
+        color_msg yellow "      echo \"docker-compose -f $PWD/zabbix-proxy-$TYPE/docker-compose.yml up -d\" >> /etc/rc.local\n" 
     fi
 } 
 
@@ -194,7 +194,7 @@ while getopts ":t:n:s:h" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_PROXY_NAME" =~ [A-Za-z].+$ ]]; then
-                CNT=`grep -c '^ZBX_HOSTNAME' $ZBX_HOME-$TYPE/.env_prx`
+                CNT=$(grep -c ^ZBX_HOSTNAME ${ZBX_HOME}-$TYPE/.env_prx)
 
                 if [ "$CNT" -ne 0 ]; then
                     err_msg "Error: check ZBX_HOSTNAME in the .env_prx files."
@@ -214,7 +214,7 @@ while getopts ":t:n:s:h" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_SERVER" =~ [A-Za-z].+$ ]] || [[ "$ZBX_SERVER" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
-                CNT=`grep -c '^ZBX_SERVER_HOST' $ZBX_HOME-$TYPE/.env_prx`
+                CNT=$(grep -c ^ZBX_SERVER_HOST ${ZBX_HOME}-$TYPE/.env_prx)
 
                 if [ "$CNT" -ne 0 ]; then
                     err_msg "Error: check ZBX_SERVER in the .env_prx files."
