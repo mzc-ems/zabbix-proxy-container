@@ -135,7 +135,7 @@ After=docker.service
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-WorkingDirectory=$PWD/$ZBX_HOME-$TYPE
+WorkingDirectory={DOCKER-COMPOSE HOME DIRECTORY}
 ExecStart=/usr/local/bin/docker-compose up -d
 ExecStop=/usr/local/bin/docker-compose down
 TimeoutStartSec=0
@@ -145,6 +145,8 @@ WantedBy=multi-user.target
 EOF
         color_msg yellow "Your user rights as a root."
         color_msg yellow "Adding to the systemd service with something like:\n"
+        color_msg yellow "Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file"
+        color_msg yellow "The path is $PWD/$ZBX_HOME-$TYPE\n"
         color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/"
         color_msg yellow "      systemctl enable dc-zabbix-proxy.service"
         color_msg green "Done.\n"
