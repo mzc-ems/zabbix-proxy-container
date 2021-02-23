@@ -6,7 +6,7 @@ set -e
 # Define variables.
 OPTIND=1
 TEMPCNT=1
-TYPE_BASE="zabbix-proxy"
+ZBX_HOME="zabbix-proxy"
 
 # Error message
 err_msg() { echo "$@"; } >&2
@@ -54,10 +54,10 @@ show_help() {
 install_docker_pack() {
     if [ -f /etc/system-release ]; then
         if [[ $(cut -d ' ' -f1 /etc/system-release) == Amazon ]]; then
-            color_msg green "Install the Docker package from the repository. (Amazon Linux)"
-            sudo yum -y install docker
+            color_msg green "Install the Docker package from the repository. (Amazon Linux)\n"
+            sudo yum -y -q install docker
         else
-            color_msg green "Install the Docker package from the repository. (Fedora)"
+            color_msg green "Install the Docker package from the repository. (Fedora)\n"
             color_msg yellow "Add Docker's official repository >>> "
             sudo dnf install dnf-plugins-core
             sudo dnf config-manager \
@@ -67,17 +67,17 @@ install_docker_pack() {
             sudo dnf install docker-ce docker-ce-cli containerd.io
         fi
     elif [ -f /etc/centos-release ]; then
-            color_msg green "Install the Docker package from the repository. (CentOS)"
+            color_msg green "Install the Docker package from the repository. (CentOS)\n"
             color_msg yellow "Add Docker's official repository >>> "
-            sudo yum install yum-utils
+            sudo yum install -y -q yum-utils
             sudo yum-config-manager \
                 --add-repo \
                 https://download.docker.com/linux/centos/docker-ce.repo
             color_msg yellow "Install the Docker Engine >>> "
             sudo yum install -y docker-ce docker-ce-cli containerd.io
     elif [ -f /etc/lsb-release ]; then
-        color_msg green "Install the Docker package from the repository. (Ubuntu)"
-        sudo apt-get update && sudo apt-get -y install \
+        color_msg green "Install the Docker package from the repository. (Ubuntu)\n"
+        sudo apt-get -qq update && sudo apt-get -y -qq install \
             apt-transport-https \
             ca-certificates \
             curl \
@@ -91,9 +91,9 @@ install_docker_pack() {
             $(lsb_release -cs) \
             stable"
         color_msg yellow "Install Docker Engine >>> "
-        sudo apt-get update && sudo apt-get -y install docker-ce docker-ce-cli containerd.io
+        sudo apt-get update && sudo apt-get -y -qq install docker-ce docker-ce-cli containerd.io
     else
-        err_msg $(color_msg red "Error: check your linux distro system.")
+        err_msg "Error: check your linux distro system."
         exit 1
     fi
 
@@ -110,17 +110,17 @@ install_docker_pack() {
 install_zbx_proxy() {
     color_msg green "Start installing zabbix proxy server .....\n"
     if [ "$TYPE" = "local" ]; then    
-        docker-compose -f $TYPE_BASE-$TYPE/docker-compose.yml up -d --build
+        docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d --build
     else
-        docker-compose -f $TYPE_BASE-$TYPE/docker-compose.yml up -d
+        docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d
     fi
-    sudo docker-compose -f $TYPE_BASE-$TYPE ps
+    sudo docker-compose -f $ZBX_HOME-$TYPE ps
     color_msg green "Service up zabbix-proxy-$TYPE container."
 }
 
 # Main
 # Short options
-if [ -z "$@" ] ; then
+if [ -z $@ ] ; then
     err_msg "Error: no options."
     err_msg "run ./$(basename "$0") -h" 
     exit 1
@@ -152,13 +152,13 @@ while getopts ":t:n:s:h" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_PROXY_NAME" =~ [A-Za-z].+$ ]]; then
-                CNT=$(grep -c '^ZBX_HOSTNAME' $TYPE_BASE-$TYPE/.env_prx)
+                CNT=$(grep -c '^ZBX_HOSTNAME' $ZBX_HOME-$TYPE/.env_prx)
 
                 if [ "$CNT" -ne 0 ]; then
-                    err_msg $(color_msg yello "Error: check ZBX_HOSTNAME in the .env_prx files.")
+                    err_msg "Error: check ZBX_HOSTNAME in the .env_prx files."
                     exit 1
                 else
-                    echo "ZBX_HOSTNAME=$ZBX_PROXY_NAME" >> $TYPE_BASE-$TYPE/.env_prx
+                    echo "ZBX_HOSTNAME=$ZBX_PROXY_NAME" >> $ZBX_HOME-$TYPE/.env_prx
                 fi        
             else
                 err_msg "Error: -$opt is invaild argument or the first letter cann't digit or special character"
@@ -173,13 +173,13 @@ while getopts ":t:n:s:h" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_SERVER" =~ [A-Za-z].+$ ]] || [[ "$ZBX_SERVER" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
-                CNT=$(grep -c '^ZBX_SERVER_HOST' $TYPE_BASE-$TYPE/.env_prx)
+                CNT=$(grep -c '^ZBX_SERVER_HOST' $ZBX_HOME-$TYPE/.env_prx)
 
                 if [ "$CNT" -ne 0 ]; then
                     err_msg "Error: check ZBX_SERVER in the .env_prx files."
                     exit 1
                 else
-                    echo "ZBX_SERVER_HOST=$ZBX_SERVER" >> $TYPE_BASE-$TYPE/.env_prx
+                    echo "ZBX_SERVER_HOST=$ZBX_SERVER" >> $ZBX_HOME-$TYPE/.env_prx
                 fi
             else
                 err_msg "Error: -$opt is invaild argument or check hostname or ip address."
