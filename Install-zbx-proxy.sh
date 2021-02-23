@@ -38,13 +38,13 @@ show_help() {
     echo "  $(basename "$0") [-tns]"
     echo
     echo "Options:"
-    echo "  -t <lastest|local>   Reference to Type section"
+    echo "  -t <latest|local>   Reference to Type section"
     echo "  -n <name>            Specify a zabbix proxy server name"
     echo "  -s <host|ip>         Specify the zabbix server hostname or ip address"
     echo "  -h                   This help text"
     echo 
     echo "Type:"
-    echo "  lastest              Specify a default type to install container"
+    echo "  latest              Specify a default type to install container"
     echo "  local                Specify a custom build to install container"
     echo "                       Include a dockerfile"
     exit 1
@@ -137,11 +137,11 @@ while getopts ":t:n:s:h" opt; do
     case "$opt" in
         t)
             TYPE="$OPTARG"
-            if [[ "$TYPE" =~ lastest|local ]]; then
+            if [[ "$TYPE" =~ latest|local ]]; then
                 install_docker_pack
                 install_zbx_proxy
             else
-                err_msg "Error: -$opt is invaild argument or select lastest or local."
+                err_msg "Error: -$opt is invaild argument or select latest or local."
                 exit 1
             fi
             ;;
