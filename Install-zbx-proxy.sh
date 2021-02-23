@@ -143,20 +143,15 @@ TimeoutStartSec=0
 [Install]
 WantedBy=multi-user.target
 EOF
-        echo
-        color_msg yellow "Your user rights as a root.\n"
+        color_msg yellow "Your user rights as a root."
         color_msg yellow "Adding to the systemd service with something like:\n"
-        echo 
-        color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/\n"
-        color_msg yellow "      systemctl enable dc-zabbix-proxy.service\n"
-        echo
+        color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/"
+        color_msg yellow "      systemctl enable dc-zabbix-proxy.service"
         color_msg green "Done.\n"
     else
-        echo 
-        color_msg yellow "Your user rights as a root\n"
-        color_msg yellow "Adding to service in rc.local with something like:\n"
-        color_msg yellow "      echo \"docker-compose -f $PWD/$ZBX_HOME/$TYPE/docker-compose.yml up -d\" >> /etc/rc.local\n"
-        echo 
+        color_msg yellow "Your user rights as a root"
+        color_msg yellow "Adding to service in rc.local with something like:"
+        color_msg yellow "      echo \"docker-compose -f $PWD/$ZBX_HOME/$TYPE/docker-compose.yml up -d\" >> /etc/rc.local" 
     fi
 } 
 
