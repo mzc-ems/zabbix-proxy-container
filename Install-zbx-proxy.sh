@@ -124,7 +124,7 @@ install_zbx_proxy() {
 add_zbx_proxy_service() {        
     if [[ $(command -v systemctl) ]] && [ ! -f /etc/systemd/system/dc-zabbix-proxy.service ]; then
         color_msg green "Add dc-zabbix-proxy service in systemd >>> "
-        sudo cat > /etc/systemd/system/dc-zabbix-proxy.service <<-'EOF'
+        cat > dc-zabbix-proxy.service <<-'EOF'
             # /etc/systemd/system/dc-zabbix-proxy.service
 
             [Unit]
@@ -142,10 +142,19 @@ add_zbx_proxy_service() {
 
             [Install]
             WantedBy=multi-user.target
-EOF
-        sudo systemctl enable dc-zabbix-proxy.service
+        EOF
+
+        echo "Your user rights as a root"
+        echo "Adding to the systemd service with something like:"
+        echo "  cp dc-zabbix-proxy.service /etc/systemd/system/"
+        echo "  systemctl enable dc-zabbix-proxy.service"
+        echo
+
     else
-        echo "Add to rc.local file"
+        echo "Your user rights as a root"
+        echo "Adding to service in rc.local with something like:"
+        echo "  echo \"docker-compose -f $PWD/$ZBX_HOME/$TYPE/docker-compose.yml up -d\" >> /etc/rc.local"
+        echo 
     fi
 } 
 
