@@ -44,6 +44,10 @@ show_help() {
     echo "  latest              Specify a default type to install container"
     echo "  local               Specify a custom build to install container"
     echo "                      Include a dockerfile"
+    echo
+    echo "WARRINGS:"
+    echo "  If there are no arguments for options -n and -s," 
+    echo "  the default value is set."
     exit 1
 }
 
@@ -178,7 +182,7 @@ if [[ -z "$@" ]] ; then
 fi
 
 # Option parameters
-while getopts ":t:n:s:h" opt; do
+while getopts ":t:n:s:h:" opt; do
     if [ "$TEMPCNT" -eq 1 ] && [[ "$opt" =~ [ns] ]]; then
         err_msg "Error: $OPTARG is invalid. The first option must be -t." 
         err_msg "run ./$(basename "$0") -h"
@@ -201,14 +205,14 @@ while getopts ":t:n:s:h" opt; do
 
         n)
             ZBX_PROXY_NAME="$OPTARG"
-            if [[ "$ZBX_PROXY_NAME" =~ ^-[sh] ]]; then 
+            if [[ "$ZBX_PROXY_NAME" =~ ^-[tsh] ]]; then 
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_PROXY_NAME" =~ [A-Za-z].+$ ]]; then
                 CNT=$(grep -c ^ZBX_HOSTNAME ${ZBX_HOME}-$TYPE/.env_prx)
 
                 if [ "$CNT" -ne 0 ]; then
-                    err_msg "Error: check ZBX_HOSTNAME in the .env_prx files."
+                    err_msg "Error: check ZBX_HOSTNAME in ${ZBX_HOME}-$TYPE/.env_prx file."
                     exit 1
                 else
                     echo "ZBX_HOSTNAME=$ZBX_PROXY_NAME" >> $ZBX_HOME-$TYPE/.env_prx
@@ -221,36 +225,45 @@ while getopts ":t:n:s:h" opt; do
 
         s)
             ZBX_SERVER="$OPTARG"
-            if [[ "$ZBX_SERVER" =~ ^-[th] ]]; then 
+            if [[ "$ZBX_SERVER" =~ ^-[tnh] ]]; then 
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_SERVER" =~ [A-Za-z].+$ ]] || [[ "$ZBX_SERVER" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
                 CNT=$(grep -c ^ZBX_SERVER_HOST ${ZBX_HOME}-$TYPE/.env_prx)
 
                 if [ "$CNT" -ne 0 ]; then
-                    err_msg "Error: check ZBX_SERVER in the .env_prx files."
+                    err_msg "Error: check ZBX_SERVER in ${ZBX_HOME}-$TYPE/.env_prx file."
                     exit 1
                 else
                     echo "ZBX_SERVER_HOST=$ZBX_SERVER" >> $ZBX_HOME-$TYPE/.env_prx
                 fi
             else
-                err_msg "Error: -$opt is invaild argument or check hostname or ip address."
+                err_msg "Error: -$opt is invaild argument or check <hostname> or <ip address>."
                 exit 1
             fi
             ;;
         h)
-            show_help
+            if [[ "$OPTARG" =~ ^-[tns] ]]; then
+                err_msg "Error: illegal option $OPTARG"
+                show_help
+            elif [ -z "$OPTARG" ]; then
+                show_help
+            fi
             ;;
 
         \?)
-            err_msg "Invalid option: -$OPTARG"
+            err_msg "invalid option: -$OPTARG"
             show_help
             ;;
 
         :)
-            err_msg "Error: option -$OPTARG requires an argument."
-            err_msg "Run ./$(basename "$0") -h" 
-            exit 1
+            if [ "$OPTARG" == h ]; then
+                show_help
+            else
+                err_msg "Error: option -$OPTARG requires an argument."
+                err_msg "Run ./$(basename "$0") -h" 
+                exit 1
+            fi
             ;;
 
     esac
@@ -264,5 +277,5 @@ if [ -z "$TYPE" ] || [ -z "ZBX_PROXY_NAME" ] || [ -z "$ZBX_SERVER" ]; then
 fi
 
 color_msg green "Completed installing zabbix proxy server .....\n"
-color_msg green "Done."
+color_msg green "Done.\n"
 exit 0
