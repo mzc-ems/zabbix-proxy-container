@@ -18,14 +18,14 @@ color_msg() {
   local text="$@"
 
   case "$color" in
-    red    ) echo -e "\e[31m" ;;
-    green  ) echo -e "\e[32m" ;;
-    yellow ) echo -e "\e[33m" ;;
-    blue   ) echo -e "\e[34m" ;;
+    red    ) echo -en "\e[31m" ;;
+    green  ) echo -en "\e[32m" ;;
+    yellow ) echo -en "\e[33m" ;;
+    blue   ) echo -en "\e[34m" ;;
   esac
 
-  echo -e "$text"
-  echo -e "\e[0m"
+  echo -en "$text"
+  echo -en "\e[0m"
 } 
 
 # Show help
@@ -194,7 +194,8 @@ while getopts ":t:n:s:h" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_PROXY_NAME" =~ [A-Za-z].+$ ]]; then
-                CNT=$(grep -c '^ZBX_HOSTNAME' $ZBX_HOME-$TYPE/.env_prx)
+                CNT=`grep -c '^ZBX_HOSTNAME' $ZBX_HOME-$TYPE/.env_prx`
+
                 if [ "$CNT" -ne 0 ]; then
                     err_msg "Error: check ZBX_HOSTNAME in the .env_prx files."
                     exit 1
@@ -213,7 +214,7 @@ while getopts ":t:n:s:h" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_SERVER" =~ [A-Za-z].+$ ]] || [[ "$ZBX_SERVER" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
-                CNT=$(grep -c '^ZBX_SERVER_HOST' $ZBX_HOME-$TYPE/.env_prx)
+                CNT=`grep -c '^ZBX_SERVER_HOST' $ZBX_HOME-$TYPE/.env_prx`
 
                 if [ "$CNT" -ne 0 ]; then
                     err_msg "Error: check ZBX_SERVER in the .env_prx files."
