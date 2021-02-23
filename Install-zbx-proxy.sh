@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -e
 # Create Date: 2021-02-17 (parkmh@mz.co.kr / ManHee Park)
 # Description: The zabbix proxy server auto installer.
 
@@ -56,6 +55,10 @@ install_docker_pack() {
         if [[ $(cut -d ' ' -f1 /etc/system-release) == Amazon ]]; then
             color_msg green "Install the Docker package from the repository. (Amazon Linux)\n"
             sudo yum -y -q install docker
+
+            if [[ $(ps -fu root | grep -c systemd) -eq 0 ]]; then
+                sudo service docker start
+            fi
         else
             color_msg green "Install the Docker package from the repository. (Fedora)\n"
             color_msg yellow "Add Docker's official repository >>> "
@@ -143,7 +146,7 @@ TimeoutStartSec=0
 [Install]
 WantedBy=multi-user.target
 EOF
-
+        echo
         color_msg yellow "Your user rights as a root.\n"
         color_msg yellow "Adding to the systemd service with something like:\n"
         color_msg yellow "Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file\n"
@@ -152,9 +155,12 @@ EOF
         color_msg yellow "      systemctl enable dc-zabbix-proxy.service\n\n"
         color_msg green "Done.\n"
     else
+        echo
         color_msg yellow "Your user rights as a root\n"
         color_msg yellow "Adding to service in rc.local with something like:\n\n"
         color_msg yellow "      echo \"docker-compose -f $PWD/zabbix-proxy-$TYPE/docker-compose.yml up -d\" >> /etc/rc.local\n" 
+        echo
+        color_msg green "Done.\n"
     fi
 } 
 
