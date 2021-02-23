@@ -111,7 +111,7 @@ install_docker_pack() {
 # Install the zabbix proxy server.
 install_zbx_proxy() {
     color_msg green "Start installing zabbix proxy server .....\n"
-    if [ "$TYPE" = 'local' ]; then    
+    if [ "$TYPE" == 'local' ]; then    
         docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d --build
     else
         docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d
