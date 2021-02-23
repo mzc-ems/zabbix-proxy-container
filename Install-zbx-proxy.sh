@@ -195,7 +195,6 @@ while getopts ":t:n:s:h" opt; do
                 show_help
             elif [[ "$ZBX_PROXY_NAME" =~ [A-Za-z].+$ ]]; then
                 CNT=$(grep -c '^ZBX_HOSTNAME' $ZBX_HOME-$TYPE/.env_prx)
-
                 if [ "$CNT" -ne 0 ]; then
                     err_msg "Error: check ZBX_HOSTNAME in the .env_prx files."
                     exit 1
@@ -204,7 +203,6 @@ while getopts ":t:n:s:h" opt; do
                 fi        
             else
                 err_msg "Error: -$opt is invaild argument or the first letter cann't digit or special character"
-                echo "$OPTARG"
                 exit 1
             fi
             ;;
