@@ -2,6 +2,9 @@
 # Create Date: 2021-02-17 (parkmh@mz.co.kr / ManHee Park)
 # Description: The zabbix proxy server auto installer.
 
+set -e
+
+# Define variables.
 OPTIND=1
 TEMPCNT=1
 TYPE_BASE=./zabbix-proxy
@@ -11,9 +14,9 @@ function err_msg() { echo "$@" ;} >&2
 
 # Print color message.
 function color_msg() { 
-  local color=${1}
+  local color="$1"
   shift
-  local text="${@}"
+  local text="$@"
 
   case ${color} in
     red    ) tput setaf 1 ; tput bold ;;
@@ -24,7 +27,7 @@ function color_msg() {
     white  ) tput setaf 7 ;;
   esac
 
-  echo -en "${text}"
+  echo -en "$text"
   tput sgr0
 } 
 
@@ -45,13 +48,12 @@ function show_help() {
     echo "  lastest              Specify a default type to install container"
     echo "  local                Specify a custom build to install container"
     echo "                       Include a dockerfile"
-    echo
     exit 1
 }
 
 # Pre-install Docker Engine.
 function install_docker_pack() {
-    if [[ -n /etc/system-release ]]; then
+    if [[ -f /etc/system-release ]]; then
         color_msg green "Install the Docker package from the repository. (CentOS)"
         color_msg yellow "Add Docker's official repository >>> "
         sudo yum-config-manager \
@@ -59,7 +61,7 @@ function install_docker_pack() {
             https://download.docker.com/linux/centos/docker-ce.repo
         color_msg yellow "Install the Docker Engine >>> "
         sudo yum install docker-ce docker-ce-cli containerd.io
-    elif [[ -n /etc/lsb-release ]]; then
+    elif [[ -f /etc/lsb-release ]]; then
         color_msg green "Install the Docker package from the repository. (Ubuntu)"
         sudo apt-get update && sudo apt-get install \
             apt-transport-https \
@@ -83,21 +85,23 @@ function install_docker_pack() {
 
     # Pre-install Docker Compose.
     color_msg green "Install docker-compose."
-    sudo curl -L "https://github.com/docker/compose/releases/download/1.28.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-    sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+    if [[ ! -f /usr/local/bin/docker-compose ]]; then        
+        sudo curl -L "https://github.com/docker/compose/releases/download/1.28.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+        sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+    fi
 }
 
 # Install the zabbix proxy server.
 function install_zbx_proxy() {
     color_msg green "Start installing zabbix proxy server .....\n"
-    if [[ "$TYPE" == lastest ]]; then
-        echo "docker-compose -f ./zabbix-proxy_latest/docker-compose.yml up -d"
-    elif [[ "$TYPE" == 'local' ]]; then
-        echo "docker-compose -f ./zabbix-proxy_local/docker-compose.yml up -d --build"
+    if [[ "$TYPE" == local ]]; then    
+        docker-compose -f ${TYPE_BASE}_${TYPE}/docker-compose.yml up -d --build
     else
-        echo "Please enter either $(color_msg yello basic) or $(color_msg yello build)."
+        docker-compose -f ${TYPE_BASE}_${TYPE}/docker-compose.yml up -d
     fi
+    sudo docker-compose -f ${TYPE_BASE}_${TYPE} ps
+    color_msg green "Service up zabbix-proxy_${TYPE} container."
 }
 
 # Main
@@ -117,12 +121,12 @@ while getopts ":t:n:s:h" opt; do
         err_msg "run ./$(basename "$0") -h"
         exit 1    
     fi
+    
     case ${opt} in
         t)
             TYPE="$OPTARG"
             if [[ "$TYPE" =~ lastest|local ]]; then
-            #    install_zbx_proxy
-                echo "-t arguments OK"
+                install_zbx_proxy
             else
                 err_msg $(color_msg red "Error: -$opt is invaild argument or select lastest or local.")
                 exit 1
@@ -134,7 +138,6 @@ while getopts ":t:n:s:h" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_PROXY_NAME" =~ [A-Za-z].+$ ]]; then
-                echo "-n arguments OK"
                 CNT=`grep -c '^ZBX_HOSTNAME' ${TYPE_BASE}_${TYPE}/.env_prx`
                 if [[ "$CNT" -ne 0 ]]; then
                     err_msg $(color_msg yello "Error: check ZBX_HOSTNAME in the .env_prx files.")
@@ -154,7 +157,6 @@ while getopts ":t:n:s:h" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_SERVER" =~ [A-Za-z].+$ ]] || [[ "$ZBX_SERVER" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
-                echo "-s arguments OK"
                 CNT=`grep -c '^ZBX_SERVER_HOST' ${TYPE_BASE}_${TYPE}/.env_prx`               
                 if [[ "$CNT" -ne 0 ]]; then
                     err_msg $(color_msg yello "Error: check ZBX_SERVER in the .env_prx files.")
@@ -164,7 +166,6 @@ while getopts ":t:n:s:h" opt; do
                 fi
             else
                 err_msg $(color_msg red "Error: -$opt is invaild argument or check hostname or ip address.")
-                echo "$OPTARG"
                 exit 1
             fi
             ;;
@@ -184,16 +185,11 @@ while getopts ":t:n:s:h" opt; do
     TEMPCNT=$[ $TEMPCNT + 1 ]
 done
 
-shift $(( OPTIND - 1 ))
+shift $[ OPTIND - 1 ]
+
 if [[ -z "$TYPE" ]] || [[ -z "ZBX_PROXY_NAME" ]] || [[ -z "$ZBX_SERVER" ]]; then
     show_help
 fi
 
-# Argument debug
-echo "-n ARG is $ZBX_PROXY_NAME"
-echo "-s ARG is $ZBX_SERVER"
-echo "-t ARG is $TYPE"
-
 color_msg green "Completed installing zabbix proxy server .....\n"
-
 exit 0
