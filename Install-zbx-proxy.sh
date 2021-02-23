@@ -123,37 +123,39 @@ install_zbx_proxy() {
 # Add the zabbix-proxy service in systemd
 add_zbx_proxy_service() {        
     if [[ $(command -v systemctl) ]] && [ ! -f /etc/systemd/system/dc-zabbix-proxy.service ]; then
-        color_msg green "Add dc-zabbix-proxy service in systemd >>> "
-        cat > dc-zabbix-proxy.service <<-'EOF'
-            # /etc/systemd/system/dc-zabbix-proxy.service
+        color_msg green "Creating dc-zabbix-proxy service for the systemd >>> "
+        cat > dc-zabbix-proxy.service <<'EOF'
+# /etc/systemd/system/dc-zabbix-proxy.service
 
-            [Unit]
-            Description=Docker Compose Zabbix Proxy Service
-            Requires=docker.service
-            After=docker.service
+[Unit]
+Description=Docker Compose Zabbix Proxy Service
+Requires=docker.service
+After=docker.service
 
-            [Service]
-            Type=oneshot
-            RemainAfterExit=yes
-            WorkingDirectory=$PWD/$ZBX_HOME/$TYPE
-            ExecStart=/usr/local/bin/docker-compose up -d
-            ExecStop=/usr/local/bin/docker-compose down
-            TimeoutStartSec=0
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=$PWD/$ZBX_HOME-$TYPE
+ExecStart=/usr/local/bin/docker-compose up -d
+ExecStop=/usr/local/bin/docker-compose down
+TimeoutStartSec=0
 
-            [Install]
-            WantedBy=multi-user.target
+[Install]
+WantedBy=multi-user.target
 EOF
-
-        echo "Your user rights as a root"
-        echo "Adding to the systemd service with something like:"
-        echo "  cp dc-zabbix-proxy.service /etc/systemd/system/"
-        echo "  systemctl enable dc-zabbix-proxy.service"
         echo
-
+        color_msg yellow "Your user rights as a root.\n"
+        color_msg yellow "Adding to the systemd service with something like:\n"
+        echo 
+        color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/\n"
+        color_msg yellow "      systemctl enable dc-zabbix-proxy.service\n"
+        echo
+        color_msg green "Done.\n"
     else
-        echo "Your user rights as a root"
-        echo "Adding to service in rc.local with something like:"
-        echo "  echo \"docker-compose -f $PWD/$ZBX_HOME/$TYPE/docker-compose.yml up -d\" >> /etc/rc.local"
+        echo 
+        color_msg yellow "Your user rights as a root\n"
+        color_msg yellow "Adding to service in rc.local with something like:\n"
+        color_msg yellow "      echo \"docker-compose -f $PWD/$ZBX_HOME/$TYPE/docker-compose.yml up -d\" >> /etc/rc.local\n"
         echo 
     fi
 } 
