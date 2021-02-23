@@ -6,7 +6,7 @@ set -e
 # Define variables.
 OPTIND=1
 TEMPCNT=1
-TYPE_BASE=./zabbix-proxy
+TYPE_BASE="zabbix-proxy"
 
 # Error message
 err_msg() { echo "$@"; } >&2
@@ -152,8 +152,9 @@ while getopts ":t:n:s:h" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_PROXY_NAME" =~ [A-Za-z].+$ ]]; then
-                CNT=`grep -c '^ZBX_HOSTNAME' $TYPE_BASE-$TYPE/.env_prx`
-                if [[ "$CNT" -ne 0 ]]; then
+                CNT=$(grep -c '^ZBX_HOSTNAME' $TYPE_BASE-$TYPE/.env_prx)
+
+                if [ "$CNT" -ne 0 ]; then
                     err_msg $(color_msg yello "Error: check ZBX_HOSTNAME in the .env_prx files.")
                     exit 1
                 else
@@ -172,12 +173,13 @@ while getopts ":t:n:s:h" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_SERVER" =~ [A-Za-z].+$ ]] || [[ "$ZBX_SERVER" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
-                CNT=`grep -c '^ZBX_SERVER_HOST' $TYPE_BASE-$TYPE/.env_prx`               
-                if [[ "$CNT" -ne 0 ]]; then
+                CNT=$(grep -c '^ZBX_SERVER_HOST' $TYPE_BASE-$TYPE/.env_prx)
+
+                if [ "$CNT" -ne 0 ]; then
                     err_msg "Error: check ZBX_SERVER in the .env_prx files."
                     exit 1
                 else
-                    echo "ZBX_SERVER_HOST=$ZBX_SERVER" >> ${TYPE_BASE}_${TYPE}/.env_prx
+                    echo "ZBX_SERVER_HOST=$ZBX_SERVER" >> $TYPE_BASE-$TYPE/.env_prx
                 fi
             else
                 err_msg "Error: -$opt is invaild argument or check hostname or ip address."
@@ -198,7 +200,7 @@ while getopts ":t:n:s:h" opt; do
             err_msg "Run ./$(basename "$0") -h" 
             exit 1
             ;;
-            
+
     esac
     TEMPCNT=$[ $TEMPCNT + 1 ]
 done
