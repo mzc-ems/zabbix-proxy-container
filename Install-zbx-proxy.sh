@@ -276,6 +276,12 @@ if [ -z "$TYPE" ] || [ -z "ZBX_PROXY_NAME" ] || [ -z "$ZBX_SERVER" ]; then
     show_help   
 fi
 
+EGRESS_IP=$(curl ifconfig.io)
 color_msg green "Completed installing zabbix proxy server .....\n"
+echo 
+echo -n "This host's egress ip address is "
+color_msg blue "$(curl ifconfig.io)\n"
+echo 
 color_msg green "Done.\n"
+
 exit 0
