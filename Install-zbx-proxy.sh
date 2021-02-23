@@ -24,7 +24,7 @@ color_msg() {
     blue   ) echo -e "\e[34m" ;;
   esac
 
-  echo -en "$text"
+  echo -e "$text"
   echo -e "\e[0m"
 } 
 
@@ -124,7 +124,7 @@ install_zbx_proxy() {
 add_zbx_proxy_service() {        
     if [[ $(command -v systemctl) ]] && [ ! -f /etc/systemd/system/dc-zabbix-proxy.service ]; then
         color_msg green "Creating dc-zabbix-proxy service for the systemd >>> "
-        cat > dc-zabbix-proxy.service <<'EOF'
+        cat > dc-zabbix-proxy.service <<-'EOF'
 # /etc/systemd/system/dc-zabbix-proxy.service
 
 [Unit]
@@ -143,17 +143,18 @@ TimeoutStartSec=0
 [Install]
 WantedBy=multi-user.target
 EOF
+
         color_msg yellow "Your user rights as a root."
         color_msg yellow "Adding to the systemd service with something like:\n"
         color_msg yellow "Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file"
-        color_msg yellow "The path is $PWD/$ZBX_HOME-$TYPE\n"
+        color_msg yellow "The path is $PWD/zabbix-proxy-$TYPE\n"
         color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/"
         color_msg yellow "      systemctl enable dc-zabbix-proxy.service"
         color_msg green "Done.\n"
     else
         color_msg yellow "Your user rights as a root"
         color_msg yellow "Adding to service in rc.local with something like:"
-        color_msg yellow "      echo \"docker-compose -f $PWD/$ZBX_HOME/$TYPE/docker-compose.yml up -d\" >> /etc/rc.local" 
+        color_msg yellow "      echo \"docker-compose -f $PWD/zabbix-proxy-$TYPE/docker-compose.yml up -d\" >> /etc/rc.local" 
     fi
 } 
 
