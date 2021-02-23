@@ -6,7 +6,7 @@ set -e
 # Define variables.
 OPTIND=1
 TEMPCNT=1
-ZBX_HOME="zabbix-proxy"
+ZBX_HOME='./zabbix-proxy'
 
 # Error message
 err_msg() { echo "$@"; } >&2
