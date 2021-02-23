@@ -21,14 +21,14 @@ services:
    nofile:
     soft: 20000
     hard: 40000
-  deploy:
-   resources:
-    limits:
-      cpus: '0.70'
-      memory: 512M
-    reservations:
-      cpus: '0.3'
-      memory: 256M
+#  deploy:
+#   resources:
+#    limits:
+#      cpus: '0.70'
+#      memory: 512M
+#    reservations:
+#      cpus: '0.3'
+#      memory: 256M
   env_file:
    - .env_prx
    - .env_prx_sqlite3

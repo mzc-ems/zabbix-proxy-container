@@ -50,7 +50,9 @@ show_help() {
 
 # Pre-install Docker Engine.
 install_docker_pack() {
-    if [ -f /etc/system-release ]; then
+    if [[ $(command -v docker) ]]; then
+        color_msg red "The Docker package is already installed.\n"
+    elif [ -f /etc/system-release ]; then
         if [[ $(cut -d ' ' -f1 /etc/system-release) == Amazon ]]; then
             color_msg green "Install the Docker package from the repository. (Amazon Linux)\n"
             sudo yum -y -q install docker
@@ -75,7 +77,7 @@ install_docker_pack() {
             sudo yum install -y docker-ce docker-ce-cli containerd.io
     elif [ -f /etc/lsb-release ]; then
         color_msg green "Install the Docker package from the repository. (Ubuntu)\n"
-        sudo apt-get -qq update && sudo apt-get -y -qq install \
+        sudo apt-get update && sudo apt-get -y -qq install \
             apt-transport-https \
             ca-certificates \
             curl \
@@ -96,8 +98,10 @@ install_docker_pack() {
     fi
 
     # Pre-install Docker Compose.
-    color_msg green "Install docker-compose."
-    if [ ! $(command -v docker-compose) ]; then        
+    color_msg green "Install docker-compose.\n"
+    if [[ $(command -v docker-compose) ]]; then
+        color_msg red "The Docker package is already installed.\n"
+    else        
         sudo curl -L "https://github.com/docker/compose/releases/download/1.28.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
         sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
@@ -107,14 +111,43 @@ install_docker_pack() {
 # Install the zabbix proxy server.
 install_zbx_proxy() {
     color_msg green "Start installing zabbix proxy server .....\n"
-    if [ "$TYPE" = "local" ]; then    
+    if [ "$TYPE" = 'local' ]; then    
         docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d --build
     else
         docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d
     fi
-    sudo docker-compose -f $ZBX_HOME-$TYPE ps
-    color_msg green "Service up zabbix-proxy-$TYPE container."
+    sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml ps
+    color_msg green "\nService up zabbix-proxy-$TYPE container.\n"
 }
+
+# Add the zabbix-proxy service in systemd
+add_zbx_proxy_service() {        
+    if [[ $(command -v systemctl) ]] && [ ! -f /etc/systemd/system/dc-zabbix-proxy.service ]; then
+        color_msg green "Add dc-zabbix-proxy service in systemd >>> "
+        sudo cat > /etc/systemd/system/dc-zabbix-proxy.service <<-'EOF'
+            # /etc/systemd/system/dc-zabbix-proxy.service
+
+            [Unit]
+            Description=Docker Compose Zabbix Proxy Service
+            Requires=docker.service
+            After=docker.service
+
+            [Service]
+            Type=oneshot
+            RemainAfterExit=yes
+            WorkingDirectory=$PWD/$ZBX_HOME/$TYPE
+            ExecStart=/usr/local/bin/docker-compose up -d
+            ExecStop=/usr/local/bin/docker-compose down
+            TimeoutStartSec=0
+
+            [Install]
+            WantedBy=multi-user.target
+EOF
+        sudo systemctl enable dc-zabbix-proxy.service
+    else
+        echo "Add to rc.local file"
+    fi
+} 
 
 # Main
 # Short options
@@ -210,4 +243,5 @@ if [ -z "$TYPE" ] || [ -z "ZBX_PROXY_NAME" ] || [ -z "$ZBX_SERVER" ]; then
 fi
 
 color_msg green "Completed installing zabbix proxy server .....\n"
+color_msg green "Done."
 exit 0
