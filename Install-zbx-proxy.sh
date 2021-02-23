@@ -142,7 +142,7 @@ add_zbx_proxy_service() {
 
             [Install]
             WantedBy=multi-user.target
-        EOF
+EOF
 
         echo "Your user rights as a root"
         echo "Adding to the systemd service with something like:"
