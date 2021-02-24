@@ -20,7 +20,7 @@ color_msg() {
     red    ) echo -en "\e[31m" ;;
     green  ) echo -en "\e[32m" ;;
     yellow ) echo -en "\e[33m" ;;
-    blue   ) echo -en "\e[34m" ;;
+    cyan   ) echo -en "\e[36m" ;;
   esac
 
   echo -en "$text"
@@ -36,9 +36,9 @@ show_help() {
     echo
     echo "Options:"
     echo "  -t <latest|local>   Reference to Type section"
-    echo "  -n <name>            Specify a zabbix proxy server name"
-    echo "  -s <host|ip>         Specify the zabbix server hostname or ip address"
-    echo "  -h                   This help text"
+    echo "  -n <name>           Specify a zabbix proxy server name"
+    echo "  -s <host|ip>        Specify the zabbix server hostname or ip address"
+    echo "  -h                  This help text"
     echo 
     echo "Type:"
     echo "  latest              Specify a default type to install container"
@@ -55,14 +55,20 @@ show_help() {
 install_docker_pack() {
     if [[ $(command -v docker) ]]; then
         color_msg red "The Docker package is already installed.\n"
+        
+        if [[ $(ps -fu root | egrep -c -o 'docker|systemd') -eq 0 ]]; then
+                sudo service docker start
+        fi
+
     elif [ -f /etc/system-release ]; then
         if [[ $(cut -d ' ' -f1 /etc/system-release) == Amazon ]]; then
             color_msg green "Install the Docker package from the repository. (Amazon Linux)\n"
             sudo yum -y -q install docker
-
-            if [[ $(ps -fu root | grep -c systemd) -eq 0 ]]; then
+            
+            if [[ $(ps -fu root | egrep -c -o 'docker|systemd') -eq 0 ]]; then
                 sudo service docker start
             fi
+
         else
             color_msg green "Install the Docker package from the repository. (Fedora)\n"
             color_msg yellow "Add Docker's official repository >>> "
@@ -205,7 +211,7 @@ while getopts ":t:n:s:h:" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_PROXY_NAME" =~ [A-Za-z].+$ ]]; then
-                CNT=$(grep -c ^ZBX_HOSTNAME ${ZBX_HOME}-$TYPE/.env_prx)
+                CNT=$(grep -c '^ZBX_HOSTNAME' ${ZBX_HOME}-$TYPE/.env_prx)
 
                 if [ "$CNT" -ne 0 ]; then
                     err_msg "Error: check ZBX_HOSTNAME in ${ZBX_HOME}-$TYPE/.env_prx file."
@@ -225,7 +231,7 @@ while getopts ":t:n:s:h:" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_SERVER" =~ [A-Za-z].+$ ]] || [[ "$ZBX_SERVER" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
-                CNT=$(grep -c ^ZBX_SERVER_HOST ${ZBX_HOME}-$TYPE/.env_prx)
+                CNT=$(grep -c '^ZBX_SERVER_HOST' ${ZBX_HOME}-$TYPE/.env_prx)
 
                 if [ "$CNT" -ne 0 ]; then
                     err_msg "Error: check ZBX_SERVER in ${ZBX_HOME}-$TYPE/.env_prx file."
@@ -275,12 +281,12 @@ fi
 color_msg green "Completed installing zabbix proxy server .....\n"
 echo 
 color_msg white "This host's egress ip address: "
-color_msg blue "$(curl -sL ifconfig.io) 10051\n"
+color_msg cyan "$(curl -sL ifconfig.io) 10051\n"
 color_msg white "Connect to Zabbix server mode: "
-color_msg blue "Active proxy (default mode)\n"
-color_msg white "--------------------------------------------------\n"
-color_msg white "| Zabbix Server (10051) <--- Zabbix Proxy Server |\n"
-color_msg white "--------------------------------------------------\n"
+color_msg cyan "Active proxy (default mode)\n"
+color_msg white "**************************************************\n"
+color_msg white "* Zabbix Server (10051) <--- Zabbix Proxy Server *\n"
+color_msg white "**************************************************\n"
 echo 
 color_msg green "Done :)\n"
 
