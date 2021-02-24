@@ -7,7 +7,7 @@ services:
     - alpine:3.12
   image: zabbix-proxy-sqlite3:alpine-local
   ports:
-   - "10061:10051"
+   - "10051:10051"
   volumes:
    - /etc/localtime:/etc/localtime:ro
    - /etc/timezone:/etc/timezone:ro 

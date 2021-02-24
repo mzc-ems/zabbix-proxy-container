@@ -274,10 +274,13 @@ fi
 
 color_msg green "Completed installing zabbix proxy server .....\n"
 echo 
-echo -n "This host's egress ip address and port: "
+color_msg white "This host's egress ip address: "
 color_msg blue "$(curl -sL ifconfig.io) 10051\n"
-echo -n "This proxy server default mode: "
-color_msg blue "Active mode\n"
+color_msg white "Connect to Zabbix server mode: "
+color_msg blue "Active proxy (default mode)\n"
+color_msg white "--------------------------------------------------\n"
+color_msg white "| Zabbix Server (10051) <--- Zabbix Proxy Server |\n"
+color_msg white "--------------------------------------------------\n"
 echo 
 color_msg green "Done :)\n"
 
