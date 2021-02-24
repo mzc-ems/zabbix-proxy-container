@@ -7,7 +7,9 @@ services:
   volumes:
    - /etc/localtime:/etc/localtime:ro
    - /etc/timezone:/etc/timezone:ro 
+   - ./zbx_env/var/lib/zabbix/ssh_keys:/var/lib/zabbix/ssh_keys:ro
    - ./zbx_env/var/lib/zabbix/zabbix_proxy_db:/var/lib/zabbix/zabbix_proxy_db:rw
+   - snmptraps:/var/lib/zabbix/snmptraps:rw
   ulimits:
    nproc: 65535
    nofile:
@@ -49,3 +51,6 @@ networks:
       driver: default
       config:
       - subnet: 172.16.239.0/24
+
+volumes:
+  snmptraps:
