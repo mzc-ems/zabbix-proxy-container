@@ -199,10 +199,15 @@ while getopts ":t:n:s:h:" opt; do
             TYPE="$OPTARG"
             if [[ "$TYPE" =~ latest|local ]]; then
                 install_docker_pack
-                # docker service status check on init.
-                pscount=$(ps -fu root | egrep -c 'docker|systemd')
+                # docker service status check on init.d or systemd
+                pscount=$(ps -fu root | egrep -c 'docker')
                 if [ "$pscount" -eq 0 ]; then 
-                    sudo service docker start
+                    if [ $(ps -p 1 -o comm=) == systemd ]; then
+                        sudo systemctl enable docker
+                        sudo systemctl start docker
+                    elif [ $(ps -p 1 -o comm=) == init ]; then
+                        sudo /etc/init.d/docker start
+                    fi
                 fi
 
                 install_zbx_proxy
