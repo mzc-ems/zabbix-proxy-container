@@ -176,7 +176,7 @@ EOF
 if [ "$UID" -eq 0 ]; then 
     color_msg red "Run to user account.\n"
     exit 1
-}
+fi
 
 # Short options
 if [ -z "$@" ] ; then
