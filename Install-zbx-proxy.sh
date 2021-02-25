@@ -54,21 +54,11 @@ show_help() {
 # Pre-install Docker Engine.
 install_docker_pack() {
     if [[ $(command -v docker) ]]; then
-        color_msg red "The Docker package is already installed.\n"
-        
-        if [[ $(ps -fu root | egrep -c -o 'docker|systemd') -eq 0 ]]; then
-                sudo service docker start
-        fi
-
+        color_msg red "The Docker package is already installed.\n"        
     elif [ -f /etc/system-release ]; then
         if [[ $(cut -d ' ' -f1 /etc/system-release) == Amazon ]]; then
             color_msg green "Install the Docker package from the repository. (Amazon Linux)\n"
-            sudo yum -y -q install docker
-            
-            if [[ $(ps -fu root | egrep -c -o 'docker|systemd') -eq 0 ]]; then
-                sudo service docker start
-            fi
-
+            sudo yum -y install docker
         else
             color_msg green "Install the Docker package from the repository. (Fedora)\n"
             color_msg yellow "Add Docker's official repository >>> "
@@ -82,7 +72,7 @@ install_docker_pack() {
     elif [ -f /etc/centos-release ]; then
             color_msg green "Install the Docker package from the repository. (CentOS)\n"
             color_msg yellow "Add Docker's official repository >>> "
-            sudo yum install -y -q yum-utils
+            sudo yum install -y yum-utils
             sudo yum-config-manager \
                 --add-repo \
                 https://download.docker.com/linux/centos/docker-ce.repo
@@ -104,7 +94,7 @@ install_docker_pack() {
             $(lsb_release -cs) \
             stable"
         color_msg yellow "Install Docker Engine >>> "
-        sudo apt-get update && sudo apt-get -y -qq install docker-ce docker-ce-cli containerd.io
+        sudo apt-get update && sudo apt-get -y install docker-ce docker-ce-cli containerd.io
     else
         err_msg "Error: check your linux distro system."
         exit 1
@@ -130,7 +120,7 @@ install_zbx_proxy() {
         sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d
     fi
     sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml ps
-    color_msg green "\nService up zabbix-proxy-$TYPE container.\n"
+    color_msg green "Service up zabbix-proxy-$TYPE container.\n"
 }
 
 # Add the zabbix-proxy service in systemd
@@ -197,6 +187,12 @@ while getopts ":t:n:s:h:" opt; do
             TYPE="$OPTARG"
             if [[ "$TYPE" =~ latest|local ]]; then
                 install_docker_pack
+                # docker service status check on init.
+                BOOL=$(ps -fu root | egrep -c 'docker|systemd')
+                if [[ shift $(( $BOOL > 0 ? 0 : 1 )) ]]; then
+                    sudo service docker start
+                fi
+                
                 install_zbx_proxy
                 add_zbx_proxy_service
             else
@@ -280,13 +276,15 @@ fi
 
 color_msg green "Completed installing zabbix proxy server .....\n"
 echo 
-color_msg white "This host's egress ip address: "
+color_msg white " This host's egress ip address: "
 color_msg cyan "$(curl -sL ifconfig.io) 10051\n"
-color_msg white "Connect to Zabbix server mode: "
+color_msg white " This proxy server name: "
+color_msg cyan "$ZBX_PROXY_NAME\n"
+color_msg white " Connect to Zabbix server mode: "
 color_msg cyan "Active proxy (default mode)\n"
-color_msg white "**************************************************\n"
-color_msg white "* Zabbix Server (10051) <--- Zabbix Proxy Server *\n"
-color_msg white "**************************************************\n"
+color_msg white " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+color_msg white " + Zabbix Server (${ZBX_SERVER}:10051) <-- Zabbix Proxy Server +\n"
+color_msg white " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 echo 
 color_msg green "Done :)\n"
 
