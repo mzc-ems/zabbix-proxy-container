@@ -120,13 +120,13 @@ install_zbx_proxy() {
         sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d
     fi
 
-    sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml ps
-    if [ "$?" -ne 0 ]; then
+    if [ "$?" -eq 0 ]; then
+        add_zbx_proxy_service
+        sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml ps
+        color_msg green "SUCCESS: Service up zabbix-proxy-$TYPE container.\n"
+    else
         color_msg red "FAILED: Service up zabbix-proxy-$TYPE container.\n"
         exit 1
-    else
-        add_zbx_proxy_service
-        color_msg green "SUCCESS: Service up zabbix-proxy-$TYPE container.\n"
     fi
 }
 
