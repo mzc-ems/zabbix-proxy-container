@@ -111,26 +111,6 @@ install_docker_pack() {
     fi
 }
 
-# Install the zabbix proxy server.
-install_zbx_proxy() {
-    color_msg green "Start installing zabbix proxy server .....\n"
-    if [ "$TYPE" == 'local' ]; then    
-        sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d --build
-    else
-        sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d
-    fi
-
-    if [ "$?" -eq 0 ]; then
-        add_zbx_proxy_service
-        sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml ps
-        echo 
-        color_msg green "SUCCESS: Service up zabbix-proxy-$TYPE container.\n"
-    else
-        color_msg red "FAILED: Service up zabbix-proxy-$TYPE container.\n"
-        exit 1
-    fi
-}
-
 # Add the zabbix-proxy service in systemd
 add_zbx_proxy_service() {        
     if [[ $(command -v systemctl) &&  ! -e /etc/systemd/system/dc-zabbix-proxy.service ]]; then
@@ -171,6 +151,26 @@ EOF
     fi
 } 
 
+# Install the zabbix proxy server.
+install_zbx_proxy() {
+    color_msg green "Start installing zabbix proxy server .....\n"
+    if [ "$TYPE" == 'local' ]; then    
+        sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d --build
+    else
+        sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d
+    fi
+
+    if [ "$?" -eq 0 ]; then
+        add_zbx_proxy_service
+        sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml ps
+        echo 
+        color_msg green "SUCCESS: Service up zabbix-proxy-$TYPE container.\n"
+    else
+        color_msg red "FAILED: Service up zabbix-proxy-$TYPE container.\n"
+        exit 1
+    fi
+}
+
 # Main
 # Check root user.
 if [ "$UID" -eq 0 ]; then 
@@ -209,8 +209,6 @@ while getopts ":t:n:s:h:" opt; do
                         sudo /etc/init.d/docker start
                     fi
                 fi
-
-                install_zbx_proxy
             else
                 err_msg "Error: -$opt is invaild argument or select <latest> or <local>."
                 exit 1
@@ -288,7 +286,10 @@ shift $(( OPTIND - 1 ))
 
 if [[ -z "$TYPE" || -z "ZBX_PROXY_NAME" || -z "$ZBX_SERVER" ]]; then
     show_help   
+else
+    install_zbx_proxy
 fi
+
 
 color_msg green "Completed installing zabbix proxy server .....\n"
 echo 
