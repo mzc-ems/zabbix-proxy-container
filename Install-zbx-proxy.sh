@@ -173,7 +173,10 @@ EOF
 
 # Main
 # Check root user.
-[ "$UID" -eq 0 ] && $(color_msg red "Run to user account.\n"; exit 1)
+if [ "$UID" -eq 0 ]; then 
+    color_msg red "Run to user account.\n"
+    exit 1
+}
 
 # Short options
 if [ -z "$@" ] ; then
