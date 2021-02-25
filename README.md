@@ -49,7 +49,7 @@ WARRINGS:
 ```
 * 예시
 ```
-]$ ./Install-zbx-proxy.sh -t latest -n test-amazonlinux2 -s 52.78.54.207
+]$ ./Install-zbx-proxy.sh -t latest -n test-amazonlinux2 -s 52.78.???.??? # ???은 IP 숫자입니다.
 ```
 * 출력물
 ```
@@ -69,11 +69,11 @@ zabbix-proxy-latest_zabbix-proxy-sqlite3_1   /sbin/tini -- /usr/bin/doc ...   Up
 SUCCESS: Service up zabbix-proxy-latest container.
 Completed installing zabbix proxy server .....
 
- This host's egress ip address: 52.79.177.107
+ This host's egress ip address: 52.79.???.???
  This proxy server name: test-amazonlinux2
  Connect to Zabbix server mode: Active proxy (default mode)
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- + Zabbix Server (52.78.54.207:10051) <-- Zabbix Proxy Server +
+ + Zabbix Server (52.78.???.???:10051) <-- Zabbix Proxy Server +
  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Done :)
@@ -84,8 +84,6 @@ Done :)
 * 설치 이후에 Zabbix Proxy Server의 Parameter 변경은 Type을 변경한 디렉토리의 .env_prx를 확인하세요.
 * 자세한 정보는 아래 링크를 통해 확인하세요.
 
+** [Official Zabbix Dockerfiles](https://github.com/zabbix/zabbix-docker)
 
-[Official Zabbix Dockerfiles](https://github.com/zabbix/zabbix-docker)
-
-
-[Official Docker Engine](https://docs.docker.com/engine/install)
+** [Official Docker Engine](https://docs.docker.com/engine/install)
