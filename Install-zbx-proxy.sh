@@ -53,10 +53,10 @@ show_help() {
 
 # Pre-install Docker Engine.
 install_docker_pack() {
-    if [[ $(command -v docker) ]]; then
+    if [ $(command -v docker) ]; then
         color_msg red "The Docker package is already installed.\n"        
-    elif [ -f /etc/system-release ]; then
-        if [[ $(cut -d ' ' -f1 /etc/system-release) == Amazon ]]; then
+    elif [ -e /etc/system-release ]; then
+        if [ $(cut -d ' ' -f1 /etc/system-release) == Amazon ]; then
             color_msg green "Install the Docker package from the repository. (Amazon Linux)\n"
             sudo yum -y install docker
         else
@@ -69,7 +69,7 @@ install_docker_pack() {
             color_msg yellow "Install the Docker Engine >>> "
             sudo dnf install docker-ce docker-ce-cli containerd.io
         fi
-    elif [ -f /etc/centos-release ]; then
+    elif [ -e /etc/centos-release ]; then
             color_msg green "Install the Docker package from the repository. (CentOS)\n"
             color_msg yellow "Add Docker's official repository >>> "
             sudo yum install -y yum-utils
@@ -78,7 +78,7 @@ install_docker_pack() {
                 https://download.docker.com/linux/centos/docker-ce.repo
             color_msg yellow "Install the Docker Engine >>> "
             sudo yum install -y docker-ce docker-ce-cli containerd.io
-    elif [ -f /etc/lsb-release ]; then
+    elif [ -e /etc/lsb-release ]; then
         color_msg green "Install the Docker package from the repository. (Ubuntu)\n"
         sudo apt-get update && sudo apt-get -y -qq install \
             apt-transport-https \
@@ -102,7 +102,7 @@ install_docker_pack() {
 
     # Pre-install Docker Compose.
     color_msg green "Install docker-compose.\n"
-    if [[ $(command -v docker-compose) ]]; then
+    if [ $(command -v docker-compose) ]; then
         color_msg red "The Docker package is already installed.\n"
     else        
         sudo curl -L "https://github.com/docker/compose/releases/download/1.28.4/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
@@ -119,13 +119,20 @@ install_zbx_proxy() {
     else
         sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d
     fi
+
     sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml ps
-    color_msg green "Service up zabbix-proxy-$TYPE container.\n"
+    if [ "$?" -ne 0 ]; then
+        color_msg red "FAILED: Service up zabbix-proxy-$TYPE container.\n"
+        exit 1
+    else
+        add_zbx_proxy_service
+        color_msg green "SUCCESS: Service up zabbix-proxy-$TYPE container.\n"
+    fi
 }
 
 # Add the zabbix-proxy service in systemd
 add_zbx_proxy_service() {        
-    if [[ $(command -v systemctl) ]] && [ ! -f /etc/systemd/system/dc-zabbix-proxy.service ]; then
+    if [[ $(command -v systemctl) &&  ! -e /etc/systemd/system/dc-zabbix-proxy.service ]]; then
         color_msg green "Creating dc-zabbix-proxy service for the systemd >>> "
         cat > dc-zabbix-proxy.service <<-'EOF'
 # /etc/systemd/system/dc-zabbix-proxy.service
@@ -167,7 +174,7 @@ EOF
 
 # Main
 # Short options
-if [[ -z "$@" ]] ; then
+if [ -z "$@" ] ; then
     err_msg "Error: no options."
     err_msg "run ./$(basename "$0") -h" 
     exit 1
@@ -175,7 +182,7 @@ fi
 
 # Option parameters
 while getopts ":t:n:s:h:" opt; do
-    if [ "$TEMPCNT" -eq 1 ] && [[ "$opt" =~ [ns] ]]; then
+    if [[ "$TEMPCNT" -eq 1 && "$opt" =~ [ns] ]]; then
         err_msg "Error: $OPTARG is invalid. The first option must be -t." 
         err_msg "run ./$(basename "$0") -h"
         exit 1    
@@ -188,13 +195,12 @@ while getopts ":t:n:s:h:" opt; do
             if [[ "$TYPE" =~ latest|local ]]; then
                 install_docker_pack
                 # docker service status check on init.
-                BOOL=$(ps -fu root | egrep -c 'docker|systemd')
-                if [[ shift $(( $BOOL > 0 ? 0 : 1 )) ]]; then
+                pscount=$(ps -fu root | egrep -c 'docker|systemd')
+                if [ "$pscount" -eq 0 ]; then 
                     sudo service docker start
                 fi
-                
+
                 install_zbx_proxy
-                add_zbx_proxy_service
             else
                 err_msg "Error: -$opt is invaild argument or select <latest> or <local>."
                 exit 1
@@ -207,9 +213,9 @@ while getopts ":t:n:s:h:" opt; do
                 err_msg "Error: -$opt is no argument"
                 show_help
             elif [[ "$ZBX_PROXY_NAME" =~ [A-Za-z].+$ ]]; then
-                CNT=$(grep -c '^ZBX_HOSTNAME' ${ZBX_HOME}-$TYPE/.env_prx)
+                count=$(grep -c '^ZBX_HOSTNAME' ${ZBX_HOME}-$TYPE/.env_prx)
 
-                if [ "$CNT" -ne 0 ]; then
+                if [ "$count" -ne 0 ]; then
                     err_msg "Error: check ZBX_HOSTNAME in ${ZBX_HOME}-$TYPE/.env_prx file."
                     exit 1
                 else
@@ -226,10 +232,10 @@ while getopts ":t:n:s:h:" opt; do
             if [[ "$ZBX_SERVER" =~ ^-[tnh] ]]; then 
                 err_msg "Error: -$opt is no argument"
                 show_help
-            elif [[ "$ZBX_SERVER" =~ [A-Za-z].+$ ]] || [[ "$ZBX_SERVER" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
-                CNT=$(grep -c '^ZBX_SERVER_HOST' ${ZBX_HOME}-$TYPE/.env_prx)
+            elif [[ "$ZBX_SERVER" =~ [A-Za-z].+$ || "$ZBX_SERVER" =~ [0-9]{1,3}\.[0-9]{1,3}\.[0-9][{1,3}\.[0-9]{1,3}$ ]]; then
+                count=$(grep -c '^ZBX_SERVER_HOST' ${ZBX_HOME}-$TYPE/.env_prx)
 
-                if [ "$CNT" -ne 0 ]; then
+                if [ "$count" -ne 0 ]; then
                     err_msg "Error: check ZBX_SERVER in ${ZBX_HOME}-$TYPE/.env_prx file."
                     exit 1
                 else
@@ -270,7 +276,7 @@ done
 
 shift $(( OPTIND - 1 ))
 
-if [ -z "$TYPE" ] || [ -z "ZBX_PROXY_NAME" ] || [ -z "$ZBX_SERVER" ]; then
+if [[ -z "$TYPE" || -z "ZBX_PROXY_NAME" || -z "$ZBX_SERVER" ]]; then
     show_help   
 fi
 
@@ -282,9 +288,9 @@ color_msg white " This proxy server name: "
 color_msg cyan "$ZBX_PROXY_NAME\n"
 color_msg white " Connect to Zabbix server mode: "
 color_msg cyan "Active proxy (default mode)\n"
-color_msg white " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+color_msg white " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 color_msg white " + Zabbix Server (${ZBX_SERVER}:10051) <-- Zabbix Proxy Server +\n"
-color_msg white " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+color_msg white " ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 echo 
 color_msg green "Done :)\n"
 
