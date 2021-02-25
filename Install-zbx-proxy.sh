@@ -172,6 +172,9 @@ EOF
 } 
 
 # Main
+# Check root user.
+[ "$UID" -eq 0 ] && color_msg red "Run to user account."; exit 1
+
 # Short options
 if [ -z "$@" ] ; then
     err_msg "Error: no options."
