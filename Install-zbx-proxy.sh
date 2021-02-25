@@ -294,7 +294,7 @@ fi
 color_msg green "Completed installing zabbix proxy server .....\n"
 echo 
 color_msg white " This host's egress ip address: "
-color_msg cyan "$(curl -sL ifconfig.io) 10051\n"
+color_msg cyan "$(curl -sL ifconfig.io)\n"
 color_msg white " This proxy server name: "
 color_msg cyan "$ZBX_PROXY_NAME\n"
 color_msg white " Connect to Zabbix server mode: "
