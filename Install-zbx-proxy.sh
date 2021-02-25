@@ -123,6 +123,7 @@ install_zbx_proxy() {
     if [ "$?" -eq 0 ]; then
         add_zbx_proxy_service
         sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml ps
+        echo 
         color_msg green "SUCCESS: Service up zabbix-proxy-$TYPE container.\n"
     else
         color_msg red "FAILED: Service up zabbix-proxy-$TYPE container.\n"
@@ -154,7 +155,6 @@ TimeoutStartSec=0
 WantedBy=multi-user.target
 EOF
         echo
-        echo
         color_msg yellow "Your user rights as a root.\n"
         color_msg yellow "Adding to the systemd service with something like:\n"
         color_msg yellow "Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file\n"
@@ -163,7 +163,6 @@ EOF
         color_msg yellow "      systemctl enable dc-zabbix-proxy.service\n"
         echo
     else
-        echo
         echo
         color_msg yellow "Your user rights as a root\n"
         color_msg yellow "Adding to service in rc.local with something like:\n\n"
