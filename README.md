@@ -3,19 +3,23 @@
 * Zabbix Proxy 운영 및 관리를 단순화하기 위해 Container르 구성하여 서비스를 구성합니다.
 * 이미지는 aㅣpine 기반이며 DB는 sqlite3로 구성합니다.
 
+
 ### 2. 구성 요소
 * Docker engine
 * Docker-compose
 * Zabbix docker-compose YAML 파일.
 
+
 ### 3. 전제 조건
 * 소스 코드를 받기 위해 git이 설치되어 있어야 합니다.
 * 해당 소스 내에서 docker image 및 dockerfile 다운로드르 위해 443 포트가 개방되어야 합니다.
+
 
 ### 4. 지원 Platform
 * Amazon Linux & Amazon Linux 2
 * Ubuntu 12.04 later
 * CentOs 7 & 8
+
 
 ### 5. 사용법
 ```
@@ -75,8 +79,13 @@ Completed installing zabbix proxy server .....
 Done :)
 ```
 
+
 ### 5. 맺음말
 * 설치 이후에 Zabbix Proxy Server의 Parameter 변경은 Type을 변경한 디렉토리의 .env_prx를 확인하세요.
 * 자세한 정보는 아래 링크를 통해 확인하세요.
+
+
 [Official Zabbix Dockerfiles](https://github.com/zabbix/zabbix-docker)
+
+
 [Official Docker Engine](https://docs.docker.com/engine/install)
