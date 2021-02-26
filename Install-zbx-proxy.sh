@@ -55,7 +55,16 @@ show_help() {
 install_docker_pack() {
     if [ $(command -v docker) ]; then
         color_msg red "The Docker package is already installed.\n"        
-    elif [ -e /etc/system-release ]; then
+    elif [ -f /etc/centos-release ]; then
+            color_msg green "Install the Docker package from the repository. (CentOS)\n"
+            color_msg yellow "Add Docker's official repository >>> "
+            sudo yum install -y yum-utils
+            sudo yum-config-manager \
+                --add-repo \
+                https://download.docker.com/linux/centos/docker-ce.repo
+            color_msg yellow "Install the Docker Engine >>> "
+            sudo yum install -y docker-ce docker-ce-cli containerd.io
+    elif [ -f /etc/system-release ]; then
         if [ $(cut -d ' ' -f1 /etc/system-release) == Amazon ]; then
             color_msg green "Install the Docker package from the repository. (Amazon Linux)\n"
             sudo yum -y install docker
@@ -69,16 +78,7 @@ install_docker_pack() {
             color_msg yellow "Install the Docker Engine >>> "
             sudo dnf install docker-ce docker-ce-cli containerd.io
         fi
-    elif [ -e /etc/centos-release ]; then
-            color_msg green "Install the Docker package from the repository. (CentOS)\n"
-            color_msg yellow "Add Docker's official repository >>> "
-            sudo yum install -y yum-utils
-            sudo yum-config-manager \
-                --add-repo \
-                https://download.docker.com/linux/centos/docker-ce.repo
-            color_msg yellow "Install the Docker Engine >>> "
-            sudo yum install -y docker-ce docker-ce-cli containerd.io
-    elif [ -e /etc/lsb-release ]; then
+    elif [ -f /etc/lsb-release ]; then
         color_msg green "Install the Docker package from the repository. (Ubuntu)\n"
         sudo apt-get update && sudo apt-get -y -qq install \
             apt-transport-https \
@@ -113,7 +113,7 @@ install_docker_pack() {
 
 # Add the zabbix-proxy service in systemd
 add_zbx_proxy_service() {        
-    if [[ $(command -v systemctl) &&  ! -e /etc/systemd/system/dc-zabbix-proxy.service ]]; then
+    if [[ $(command -v systemctl) &&  ! -f /etc/systemd/system/dc-zabbix-proxy.service ]]; then
         color_msg green "Creating dc-zabbix-proxy service for the systemd >>> "
         cat > dc-zabbix-proxy.service <<-'EOF'
 # /etc/systemd/system/dc-zabbix-proxy.service
@@ -135,17 +135,17 @@ TimeoutStartSec=0
 WantedBy=multi-user.target
 EOF
         echo
-        color_msg yellow "Your user rights as a root.\n"
-        color_msg yellow "Adding to the systemd service with something like:\n"
-        color_msg yellow "Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file\n"
-        color_msg yellow "The path is $PWD/zabbix-proxy-$TYPE\n\n"
+        color_msg white "Your user rights as a root.\n"
+        color_msg white "Adding to the systemd service with something like:\n"
+        color_msg white "Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file.\n"
+        color_msg yellow "PATH: $PWD/zabbix-proxy-$TYPE\n\n"
         color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/\n"
         color_msg yellow "      systemctl enable dc-zabbix-proxy.service\n"
         echo
     else
         echo
-        color_msg yellow "Your user rights as a root\n"
-        color_msg yellow "Adding to service in rc.local with something like:\n\n"
+        color_msg white "Your user rights as a root\n"
+        color_msg white "Adding to service in rc.local with something like:\n\n"
         color_msg yellow "      echo \"docker-compose -f $PWD/zabbix-proxy-$TYPE/docker-compose.yml up -d\" >> /etc/rc.local\n" 
         echo
     fi
@@ -175,6 +175,9 @@ install_zbx_proxy() {
 # Check root user.
 if [ "$UID" -eq 0 ]; then 
     color_msg red "Run to user account.\n"
+    exit 1
+elif [ ! $(command -v iptables) ]; then
+    color_msg yello "Check iptables pacakage"
     exit 1
 fi
 
