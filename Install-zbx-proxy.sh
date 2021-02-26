@@ -177,7 +177,7 @@ if [ "$UID" -eq 0 ]; then
     color_msg red "Run to user account.\n"
     exit 1
 elif [ ! $(command -v iptables) ]; then
-    color_msg yello "Check iptables pacakage"
+    color_msg yellow "Check iptables pacakage.\n"
     exit 1
 fi
 
