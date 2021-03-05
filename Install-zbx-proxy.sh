@@ -69,14 +69,7 @@ install_docker_pack() {
             color_msg green "Install the Docker package from the repository. (Amazon Linux)\n"
             sudo yum -y install docker
         else
-            color_msg green "Install the Docker package from the repository. (Fedora)\n"
-            color_msg yellow "Add Docker's official repository >>> "
-            sudo dnf install dnf-plugins-core
-            sudo dnf config-manager \
-                --add-repo \
-                https://download.docker.com/linux/fedora/docker-ce.repo
-            color_msg yellow "Install the Docker Engine >>> "
-            sudo dnf install docker-ce docker-ce-cli containerd.io
+            color_msg yellow "Not supoort to Red Hat Enterprise products.\n"
         fi
     elif [ -f /etc/lsb-release ]; then
         color_msg green "Install the Docker package from the repository. (Ubuntu)\n"

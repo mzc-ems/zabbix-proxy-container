@@ -2,6 +2,10 @@
 ### 1. 배경
 * Zabbix Proxy 운영 및 관리를 단순화하기 위해 Container르 구성하여 서비스를 구성합니다.
 * 이미지는 aㅣpine 기반이며 DB는 sqlite3로 구성합니다.
+* 설치 가능한 OS
+  * Amazon Linux 1 & 2
+  * CentOS 7 & 8
+  * Ubuntu 12.04 later
 
 
 ### 2. 구성 요소
