@@ -1,4 +1,2 @@
 .DS_Store
 .vscode
-!zabbix-proxy-latest/zxb_env
-!zabbix-proxy-local/zxb_env
