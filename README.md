@@ -19,6 +19,7 @@
 ---
 * 소스 코드를 받기 위해 git이 설치되어 있어야 합니다.
 * 해당 소스 내에서 docker image 및 dockerfile 다운로드르 위해 443 포트가 개방되어야 합니다.
+* 설치가 완료되면 사용자 홈디렉토리의 zabbix-proxy 디렉토리가 생성되고 Zabbix Proxy의 홈디렉토리가 됩니다.
 
 ### 4. 지원 Platform
 ---
@@ -63,14 +64,14 @@ Creating dc-zabbix-proxy service for the systemd >>>
 Your user rights as a root.
 Adding to the systemd service with something like:
 Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file
-The path is /home/ec2-user/zabbix-proxy-container/zabbix-proxy-latest
+The path is /home/ec2-user/zabbix-proxy
 
       cp dc-zabbix-proxy.service /etc/systemd/system/
       systemctl enable dc-zabbix-proxy.service
 
                    Name                                 Command               State            Ports
 --------------------------------------------------------------------------------------------------------------
-zabbix-proxy-latest_zabbix-proxy-sqlite3_1   /sbin/tini -- /usr/bin/doc ...   Up      0.0.0.0:10051->10051/tcp
+zabbix-proxy_zabbix-proxy-sqlite3_1   /sbin/tini -- /usr/bin/doc ...   Up      0.0.0.0:10051->10051/tcp
 
 SUCCESS: Service up zabbix-proxy-latest container.
 Completed installing zabbix proxy server .....
