@@ -6,6 +6,7 @@
 OPTIND=1
 TEMPCNT=1
 ZBX_HOME='./zabbix-proxy'
+# sudo rsync -avzh  --delete -exclude='.git' ./zabbix-proxy-latest/ ../zabbix-proxy
 
 # Error message
 err_msg() { echo "$@"; } >&2
@@ -131,7 +132,7 @@ EOF
         color_msg white "Your user rights as a root.\n"
         color_msg white "Adding to the systemd service with something like:\n"
         color_msg white "Modify {DOCKER-COMPOSE HOME DIRECTORY} in dc-zabbix-proxy.service file.\n"
-        color_msg yellow "PATH: $PWD/zabbix-proxy-$TYPE\n\n"
+        color_msg yellow "PATH: $HOME/zabbix-proxy\n\n"
         color_msg yellow "      cp dc-zabbix-proxy.service /etc/systemd/system/\n"
         color_msg yellow "      systemctl enable dc-zabbix-proxy.service\n"
         echo
@@ -139,7 +140,7 @@ EOF
         echo
         color_msg white "Your user rights as a root\n"
         color_msg white "Adding to service in rc.local with something like:\n\n"
-        color_msg yellow "      echo \"docker-compose -f $PWD/zabbix-proxy-$TYPE/docker-compose.yml up -d\" >> /etc/rc.local\n" 
+        color_msg yellow "      echo \"docker-compose -f $HOME/zabbix-proxy/docker-compose.yml up -d\" >> /etc/rc.local\n" 
         echo
     fi
 } 
@@ -147,20 +148,22 @@ EOF
 # Install the zabbix proxy server.
 install_zbx_proxy() {
     color_msg green "Start installing zabbix proxy server .....\n"
-    if [ "$TYPE" == 'local' ]; then    
-        sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d --build
+    if [ "$TYPE" == 'local' ]; then 
+        sudo rsync -avzh -exclude='.git' $ZBX_HOME-$TYPE/ ../zabbix-proxy   
+        sudo docker-compose -f ../zabbix-proxy/docker-compose.yml up -d --build
     else
-        sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml up -d
+        sudo rsync -avzh -exclude='.git' $ZBX_HOME-$TYPE/ ../zabbix-proxy   
+        sudo docker-compose -f ../zabbix-proxy/docker-compose.yml up -d
     fi
 
     if [ "$?" -eq 0 ]; then
         add_zbx_proxy_service
-        sudo docker-compose -f $ZBX_HOME-$TYPE/docker-compose.yml ps
+        sudo docker-compose -f ../zabbix-proxy/docker-compose.yml ps
         echo 
         color_msg green "SUCCESS: Service up zabbix-proxy-$TYPE container.\n"
     else
         color_msg red "FAILED: Service up zabbix-proxy-$TYPE container.\n"
-        exit 1
+        color_msg red "FAILED: Check for zabbix proxy service on server.\n"
     fi
 }
 
@@ -285,7 +288,6 @@ if [[ -z "$TYPE" || -z "ZBX_PROXY_NAME" || -z "$ZBX_SERVER" ]]; then
 else
     install_zbx_proxy
 fi
-
 
 color_msg green "Completed installing zabbix proxy server .....\n"
 echo 
