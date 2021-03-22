@@ -149,10 +149,10 @@ EOF
 install_zbx_proxy() {
     color_msg green "Start installing zabbix proxy server .....\n"
     if [ "$TYPE" == 'local' ]; then 
-        sudo rsync -avzh -exclude='.git' $ZBX_HOME-$TYPE/ ../zabbix-proxy   
+        sudo rsync -ah --progress --exclude='.git' --exclude='.gitignore' $ZBX_HOME-$TYPE/ ../zabbix-proxy   
         sudo docker-compose -f ../zabbix-proxy/docker-compose.yml up -d --build
     else
-        sudo rsync -avzh -exclude='.git' $ZBX_HOME-$TYPE/ ../zabbix-proxy   
+        sudo rsync -ah --progress --exclude='.git' --exclude='.gitignore' $ZBX_HOME-$TYPE/ ../zabbix-proxy   
         sudo docker-compose -f ../zabbix-proxy/docker-compose.yml up -d
     fi
 
